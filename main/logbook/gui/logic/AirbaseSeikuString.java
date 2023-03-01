@@ -117,7 +117,7 @@ public class AirbaseSeikuString {
             return p;
         });
 
-        int reconBonus = squadrons.stream().mapToInt(squadron -> {
+        int reconBonus = squadrons.stream().filter(squadron -> squadron.getCount() > 0).mapToInt(squadron -> {
             int search = squadron.getParam().getSakuteki();
             switch (squadron.getType2()) {
             case 49: // 陸上偵察機
@@ -226,7 +226,7 @@ public class AirbaseSeikuString {
             return p;
         });
 
-        int reconBonus = squadrons.stream().mapToInt(squadron -> {
+        int reconBonus = squadrons.stream().filter(squadron -> squadron.getCount() > 0).mapToInt(squadron -> {
             int search = squadron.getParam().getSakuteki();
             switch (squadron.getType2()) {
             case 9: // 艦上偵察機
