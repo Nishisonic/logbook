@@ -805,7 +805,8 @@ public class BattleExDto extends AbstractDto {
 
             if (this.kind == BattlePhaseKind.LD_AIRBATTLE ||
                     this.kind == BattlePhaseKind.LD_SHOOTING ||
-                    this.kind == BattlePhaseKind.COMBINED_LD_AIR) {
+                    this.kind == BattlePhaseKind.COMBINED_LD_AIR ||
+                    this.kind == BattlePhaseKind.COMBINED_LD_SHOOTING) {
                 // 空襲戦  または レーダー射撃戦
                 // S勝利は発生しないと思われる(完全勝利Sのみ)
                 if (friendGaugeMax <= friendGauge) {
