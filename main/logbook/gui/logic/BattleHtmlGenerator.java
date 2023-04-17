@@ -1156,7 +1156,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             }
         }
 
-        // 航空戦 → 支援艦隊による攻撃 →　開幕対潜 → 開幕 → 航空戦２回目
+        // 航空戦 → 支援艦隊による攻撃 → 開幕対潜 → 開幕 → 航空戦２回目
         for (int i = 0; i < airList.size(); ++i) {
             this.genAirBattle(airList.get(i), "航空戦(" + (i + 1) + "/" + airList.size() + ")",
                     friendShips, enemyShips, friendHp, enemyHp);
@@ -1220,6 +1220,17 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 this.inline("td", flare[1], null);
                 this.end(); // tr
                 this.end(); // table
+            }
+            // 開幕夜戦
+            if (hougekiList.isEmpty()) {
+                if (phase.getSupport() != null) {
+                    for (BattleAtackDto atack : phase.getSupport()) {
+                        this.inline("span", "支援艦隊による攻撃", null);
+                        this.begin("table", DAMAGE_TABLE_CLASS[1]);
+                        this.genDamageTableContent(atack, enemyShips, enemyHp);
+                        this.end(); // table
+                    }
+                }
             }
 
             this.inline("h3", "砲雷撃", null);
