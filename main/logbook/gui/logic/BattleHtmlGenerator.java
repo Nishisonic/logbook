@@ -1127,7 +1127,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             this.inline("h3", "自軍攻撃", null);
         }
 
-        if (phase.getAirBaseInjection() != null || phase.getAirBase() != null) {
+        if ((phase.getAirBaseInjection() != null || phase.getAirBase() != null) && battle.getAirbases() != null) {
             this.inline("h3", "基地航空隊", null);
             this.genAirbaseSlotitemTable(battle.getAirbases(), battle.getMapCellDto(), battle.getStartAirbase());
         }
