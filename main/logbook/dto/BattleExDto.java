@@ -102,6 +102,9 @@ public class BattleExDto extends AbstractDto {
     @Tag(15)
     private String formationMatch = "不明";
 
+    @Tag(141)
+    private int smokeType = 0;
+
     /** 索敵状態（味方・敵） */
     @Tag(16)
     private String sakuteki[];
@@ -1635,6 +1638,11 @@ public class BattleExDto extends AbstractDto {
                 this.formationMatch = toMatch(formation.getInt(2));
             }
 
+            // 煙幕
+            if (object.containsKey("api_smoke_type")) {
+                this.smokeType = object.getInt("api_smoke_type");
+            }
+
             // 索敵
             JsonArray jsonSearch = JsonUtils.getJsonArray(object, "api_search");
             if (jsonSearch != null) {
@@ -2220,6 +2228,14 @@ public class BattleExDto extends AbstractDto {
      */
     public String getFormationMatch() {
         return this.formationMatch;
+    }
+
+    /**
+     * 煙幕タイプ
+     * @return int
+     */
+    public int getSmokeType() {
+        return this.smokeType;
     }
 
     /**

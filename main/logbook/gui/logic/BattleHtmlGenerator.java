@@ -528,6 +528,8 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             fSakuteki = battle.getSakuteki()[0];
             eSakuteki = battle.getSakuteki()[1];
         }
+        // 手抜き
+        String smokeType = battle.getSmokeType() > 0 ? "発生(" + battle.getSmokeType() + "重)" : "なし";
 
         this.inline("span", "会敵: " + battle.getFormationMatch(), null);
         this.begin("table", null);
@@ -535,16 +537,19 @@ public class BattleHtmlGenerator extends HTMLGenerator {
         this.inline("th", "", null);
         this.inline("th", "陣形", null);
         this.inline("th", "索敵", null);
+        this.inline("th", "煙幕", null);
         this.end(); // tr
         this.begin("tr", FORMATION_CLASS[0]);
         this.inline("td", "自", null);
         this.inline("td", battle.getFormation()[0], null);
         this.inline("td", fSakuteki, null);
+        this.inline("td", smokeType, null);
         this.end(); // tr
         this.begin("tr", FORMATION_CLASS[1]);
         this.inline("td", "敵", null);
         this.inline("td", battle.getFormation()[1], null);
         this.inline("td", eSakuteki, null);
+        this.inline("td", "", null);
         this.end(); // tr
         this.end(); // table
     }
