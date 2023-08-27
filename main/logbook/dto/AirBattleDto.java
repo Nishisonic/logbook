@@ -3,15 +3,17 @@
  */
 package logbook.dto;
 
-import com.dyuproject.protostuff.Tag;
-import logbook.internal.Item;
-import logbook.util.JsonUtils;
-
-import javax.json.JsonArray;
-import javax.json.JsonObject;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
+
+import javax.json.JsonArray;
+import javax.json.JsonObject;
+
+import com.dyuproject.protostuff.Tag;
+
+import logbook.internal.Item;
+import logbook.util.JsonUtils;
 
 /**
  * @author Nekopanda
@@ -210,6 +212,8 @@ public class AirBattleDto {
                 return "44:高角砲群集中配備/機銃/大和型電探";
             case 45:
                 return "45:高角砲群集中配備/大和型電探";
+            case 46:
+                return "46:35.6改三ダズルor35.6改四/集中機銃/電探";
         }
         return "不明(" + id + ")";
     }

@@ -485,6 +485,11 @@ public final class ConfigDialog extends Dialog {
         printDropLog.setText("ドロップをログに表示");
         printDropLog.setSelection(AppConfig.get().isPrintDropLog());
 
+        final Button itemGetLog = new Button(compositeFleetTab, SWT.CHECK);
+        itemGetLog.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        itemGetLog.setText("獲得資源をログに表示");
+        itemGetLog.setSelection(AppConfig.get().isPrintItemGetLog());
+
         // 艦隊タブ タブ
         compositeFleetDetail.setLayout(new GridLayout(1, false));
 
@@ -1175,6 +1180,7 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setPrintSunkLog(printSunkLog.getSelection());
                 AppConfig.get().setPrintUpdateLog(printUpdateLog.getSelection());
                 AppConfig.get().setPrintDropLog(printDropLog.getSelection());
+                AppConfig.get().setPrintItemGetLog(itemGetLog.getSelection());
                 AppConfig.get().setLoadCreateItemLog(loadCreateItemLog.getSelection());
                 AppConfig.get().setLoadCreateShipLog(loadCreateShipLog.getSelection());
                 AppConfig.get().setLoadMissionLog(loadMissionLog.getSelection());

@@ -2709,6 +2709,35 @@ public final class GlobalContext {
                 ApplicationMain.main.updateMapCell(mapCellDto);
                 if (AppConfig.get().isPrintSortieLog())
                     addConsole("行先 " + mapCellDto.toString());
+
+                if (apidata.containsKey("api_itemget") || apidata.containsKey("api_item_eo_result")) {
+                    // 獲得資源表示
+                    JsonArray itemGetObjects = apidata.containsKey("api_itemget") ? apidata.getJsonArray("api_itemget")
+                            : apidata.getJsonArray("api_item_eo_result");
+                    List<String> texts = new ArrayList<String>();
+                    for (JsonValue itemGetObjectValue : itemGetObjects) {
+                        JsonObject itemJsonObject = (JsonObject) itemGetObjectValue;
+                        // int usemst = itemJsonObject.getInt("api_usemst");
+                        int id = itemJsonObject.getInt("api_id");
+                        int getcount = itemJsonObject.getInt("api_getcount");
+                        String name = itemJsonObject.getString("api_name");
+                        // int iconId = itemJsonObject.getInt("api_icon_id");
+
+                        // api_mst_useitemと一致しない
+                        String[] array = new String[] { "", "燃料", "弾薬", "鋼材", "ボーキサイト",
+                                "高速建造材", "高速修復材", "開発資材", "改修資材",
+                                "家具コイン", "家具箱（小）", "家具箱（中）", "家具箱（大）" };
+                        if (id > 0 && id < array.length) {
+                            texts.add(array[id] + "×" + getcount);
+                        }
+                        else {
+                            texts.add("不明(id=" + id + ", name=" + name + ")×" + getcount);
+                        }
+                    }
+
+                    if (AppConfig.get().isPrintItemGetLog())
+                        addConsole("獲得資源 " + String.join(", ", texts));
+                }
             }
         } catch (Exception e) {
             LOG.get().warn("進撃を更新しますに失敗しました", e);
@@ -2731,14 +2760,15 @@ public final class GlobalContext {
                     int[] map = mapCellDto.getMap();
                     if (AppConfig.get().isUseAlphabetizeMap() && Objects.nonNull(map)) {
                         String s = Arrays.stream(strikePoint.split(",")).map((point) -> {
-                            String[] mapEdge = MapEdges.get(new int[]{map[0], map[1], Integer.parseInt(point)});
+                            String[] mapEdge = MapEdges.get(new int[] { map[0], map[1], Integer.parseInt(point) });
                             if (Objects.nonNull(mapEdge) && mapEdge.length > 1) {
                                 return mapEdge[1] + "(" + point + ")";
                             }
                             return point;
                         }).collect(Collectors.joining(","));
                         addConsole("基地航空隊 " + i + " -> " + s);
-                    } else {
+                    }
+                    else {
                         addConsole("基地航空隊 " + i + " -> " + strikePoint);
                     }
                 }

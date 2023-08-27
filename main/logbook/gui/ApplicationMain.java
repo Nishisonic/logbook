@@ -1158,7 +1158,7 @@ public final class ApplicationMain extends WindowBase {
                     }
                 }
 
-                // 付随しないため
+                // 追随しないため
                 updateResultRecord(minimum);
                 updateAirbase(minimum);
 
@@ -2381,6 +2381,11 @@ public final class ApplicationMain extends WindowBase {
         });
         if (airbaseMap.size() > 0) {
             this.airbaseCombo.select(select < 0 && select < airbaseMap.size() ? 0 : select);
+        }
+        else {
+            this.airbaseCombo.add("基地航空隊");
+            this.airbaseCombo.select(0);
+            return;
         }
 
         String result = "";

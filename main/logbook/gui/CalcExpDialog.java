@@ -289,7 +289,7 @@ public final class CalcExpDialog extends WindowBase {
                 if (before > after) {
                     after = before + 1;
                 }
-                // 目標レベルが175を超える場合は175に設定
+                // 目標レベルが180を超える場合は180に設定
                 after = Math.min(after, ExpTable.MAX_LEVEL);
 
                 String beforeexpstr = String.valueOf(ship.getExp());
