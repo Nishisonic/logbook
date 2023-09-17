@@ -54,6 +54,8 @@ function getSokuryoku(soku) {
 		case 0: return "陸上";
 		case 5: return "低速";
 		case 10: return "高速";
+		case 15: return "高速+";
+		case 20: return "最速";
 		default: return "不明";
 	}
 }

@@ -7,14 +7,10 @@ function header() {
 function begin(specdiff) { }
 
 function sallyArea(area) {
-	switch(area) {
-		case 0: return null;
-		case 1: return "札A";
-		case 2: return "札B";
-		case 3: return "札C";
-		case 4: return "札D";
-		default: return "不明";
+	if (area > 0) {
+		return new java.lang.String("札" + String.fromCharCode("A".charCodeAt() + area - 1));
 	}
+	return null;
 }
 
 function body(ship) {

@@ -23,6 +23,7 @@ public class UseItem {
             this.put(56, "艦娘からのチョコ");
             this.put(57, "勲章");
             this.put(59, "給糧艦「伊良湖」");
+            this.put(60, "プレゼント箱");
             this.put(62, "菱餅");
         }
     };

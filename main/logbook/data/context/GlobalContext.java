@@ -24,10 +24,13 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.annotation.CheckForNull;
+import javax.json.Json;
 import javax.json.JsonArray;
+import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
+import javax.json.JsonValue.ValueType;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
@@ -78,6 +81,7 @@ import logbook.internal.MapEdges;
 import logbook.internal.MasterData;
 import logbook.internal.ResultRecord;
 import logbook.internal.Ship;
+import logbook.internal.UseItem;
 import logbook.internal.ShipParameterRecord.UpdateShipParameter;
 import logbook.scripting.EventListenerProxy;
 import logbook.util.JsonUtils;
@@ -2710,34 +2714,58 @@ public final class GlobalContext {
                 if (AppConfig.get().isPrintSortieLog())
                     addConsole("行先 " + mapCellDto.toString());
 
-                if (apidata.containsKey("api_itemget") || apidata.containsKey("api_item_eo_result")) {
-                    // 獲得資源表示
-                    JsonArray itemGetObjects = apidata.containsKey("api_itemget") ? apidata.getJsonArray("api_itemget")
-                            : apidata.getJsonArray("api_item_eo_result");
-                    List<String> texts = new ArrayList<String>();
-                    for (JsonValue itemGetObjectValue : itemGetObjects) {
-                        JsonObject itemJsonObject = (JsonObject) itemGetObjectValue;
-                        // int usemst = itemJsonObject.getInt("api_usemst");
-                        int id = itemJsonObject.getInt("api_id");
-                        int getcount = itemJsonObject.getInt("api_getcount");
-                        String name = itemJsonObject.getString("api_name");
-                        // int iconId = itemJsonObject.getInt("api_icon_id");
-
-                        // api_mst_useitemと一致しない
-                        String[] array = new String[] { "", "燃料", "弾薬", "鋼材", "ボーキサイト",
-                                "高速建造材", "高速修復材", "開発資材", "改修資材",
-                                "家具コイン", "家具箱（小）", "家具箱（中）", "家具箱（大）" };
-                        if (id > 0 && id < array.length) {
-                            texts.add(array[id] + "×" + getcount);
+                // 獲得資源表示
+                List<String> texts = new ArrayList<String>();
+                String[] keys = new String[] { "api_itemget", "api_itemget_eo_comment", "api_itemget_eo_result" };
+                for (String key : keys) {
+                    if (apidata.containsKey(key)) {
+                        JsonArray itemGetObjects = null;
+                        // 配列か連想配列の2パターンあるゴミ設計(api_itemget)
+                        if (apidata.get(key).getValueType().equals(ValueType.ARRAY)) {
+                            itemGetObjects = apidata.getJsonArray(key);
                         }
                         else {
-                            texts.add("不明(id=" + id + ", name=" + name + ")×" + getcount);
+                            // 配列にして形式を合わせる
+                            JsonArrayBuilder array = Json.createArrayBuilder();
+                            array.add(apidata.getJsonObject(key));
+                            itemGetObjects = array.build();
+                        }
+                        for (JsonValue itemGetObjectValue : itemGetObjects) {
+                            JsonObject itemJsonObject = (JsonObject) itemGetObjectValue;
+
+                            int id = itemJsonObject.getInt("api_id");
+                            int usemst = itemJsonObject.getInt("api_usemst");
+                            int getcount = itemJsonObject.getInt("api_getcount");
+                            switch (usemst) {
+                            case 2:
+                                // 艦娘
+                                texts.add(Ship.get(id).getName() + "×" + getcount);
+                                break;
+                            case 3:
+                                // 装備
+                                texts.add(Item.get(id).getName() + "×" + getcount);
+                                break;
+                            case 4:
+                                String[] array = new String[] { "燃料", "弾薬", "鋼材", "ボーキサイト",
+                                        "高速建造材", "高速修復材", "開発資材", "改修資材" };
+                                texts.add(array[id - 1] + "×" + getcount);
+                                break;
+                            case 5:
+                                texts.add(UseItem.get(id) + "×" + getcount);
+                                break;
+                            case 6:
+                                // 家具
+                                texts.add("家具(id=" + id + ")×" + getcount);
+                                break;
+                            default:
+                                texts.add("不明(id=" + id + ")×" + getcount);
+                                break;
+                            }
                         }
                     }
-
-                    if (AppConfig.get().isPrintItemGetLog())
-                        addConsole("獲得資源 " + String.join(", ", texts));
                 }
+                if (AppConfig.get().isPrintItemGetLog() && !texts.isEmpty())
+                    addConsole("獲得資源 " + String.join(", ", texts));
             }
         } catch (Exception e) {
             LOG.get().warn("進撃を更新しますに失敗しました", e);
