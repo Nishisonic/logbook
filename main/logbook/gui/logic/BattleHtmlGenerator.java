@@ -538,18 +538,50 @@ public class BattleHtmlGenerator extends HTMLGenerator {
         this.inline("th", "陣形", null);
         this.inline("th", "索敵", null);
         this.inline("th", "煙幕", null);
+        this.inline("th", "気球", null);
         this.end(); // tr
         this.begin("tr", FORMATION_CLASS[0]);
         this.inline("td", "自", null);
         this.inline("td", battle.getFormation()[0], null);
         this.inline("td", fSakuteki, null);
         this.inline("td", smokeType, null);
+        int friendBalloon = (int) Math
+                .min(battle.getFriends().stream().map(dock -> {
+                    // 待避考慮
+                    List<ShipDto> ships = dock.getShips();
+                    boolean[] escaped = dock.getEscaped();
+                    if (Objects.nonNull(escaped)) {
+                        List<ShipDto> result = new ArrayList<>();
+                        for (int i = 0; i < escaped.length && i < ships.size(); i++) {
+                            if (!escaped[i]) {
+                                result.add(ships.get(i));
+                            }
+                        }
+                        return result;
+                    }
+                    return ships;
+                }).flatMap(List::stream).filter(ship -> {
+                    List<ItemDto> items = new ArrayList<>(ship.getItem2());
+                    items.add(ship.getSlotExItem());
+                    return items.stream().filter(Objects::nonNull).anyMatch(item -> item.getType3() == 55);
+                }).count(), 3);
+        List<EnemyShipDto> enemies = new ArrayList<>();
+        enemies.addAll(battle.getEnemy());
+        if (battle.getEnemyCombined() != null) {
+            enemies.addAll(battle.getEnemyCombined());
+        }
+        int enemyBalloon = (int) Math.min(enemies.stream()
+                .filter(ship -> ship.getItem2().stream().filter(Objects::nonNull)
+                        .anyMatch(item -> item.getType3() == 55))
+                .count(), 3);
+        this.inline("td", battle.isBalloonCell() && friendBalloon > 0 ? "x" + friendBalloon : "", null);
         this.end(); // tr
         this.begin("tr", FORMATION_CLASS[1]);
         this.inline("td", "敵", null);
         this.inline("td", battle.getFormation()[1], null);
         this.inline("td", eSakuteki, null);
         this.inline("td", "", null);
+        this.inline("td", battle.isBalloonCell() && enemyBalloon > 0 ? "x" + enemyBalloon : "", null);
         this.end(); // tr
         this.end(); // table
     }
@@ -1441,7 +1473,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             header = result.getMapCell().detailedString() + " (" + time + ")";
         }
         this.inline("div", "<h1>" + header + "</h1>", new String[] { "title" });
-        
+
         if (!battle.isPractice()) {
             MapCellDto mapCellDto = result.getMapCell();
             if (Objects.nonNull(mapCellDto) && Objects.nonNull(mapCellDto.getMap())) {
@@ -1450,22 +1482,24 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 if (Objects.nonNull(passedEdges) && passedEdges.size() > 0) {
                     String edgesHeader = "";
                     if (AppConfig.get().isUseAlphabetizeMap()) {
-                        String[] start = MapEdges.get(new int[]{ map[0], map[1], passedEdges.get(0) });
+                        String[] start = MapEdges.get(new int[] { map[0], map[1], passedEdges.get(0) });
                         if (Objects.nonNull(start)) {
                             edgesHeader += start[0] + "→";
                         }
                         edgesHeader += passedEdges.stream().map(edge -> {
-                            String[] masses = MapEdges.get(new int[]{ map[0], map[1], edge });
+                            String[] masses = MapEdges.get(new int[] { map[0], map[1], edge });
                             if (Objects.nonNull(masses)) {
                                 return masses[1] + "(" + edge.toString() + ")";
                             }
                             return edge.toString();
                         }).collect(Collectors.joining("→"));
-                    } else {
-                        edgesHeader += passedEdges.stream().map(edge -> edge.toString())
-                            .collect(Collectors.joining("→"));
                     }
-                    this.inline("div", "<h1 title='拡張版を途中から読み込む'>通過マス: " + edgesHeader + "</h1>", new String[] { "title" });
+                    else {
+                        edgesHeader += passedEdges.stream().map(edge -> edge.toString())
+                                .collect(Collectors.joining("→"));
+                    }
+                    this.inline("div", "<h1 title='拡張版を途中から読み込む'>通過マス: " + edgesHeader + "</h1>",
+                            new String[] { "title" });
                 }
             }
         }

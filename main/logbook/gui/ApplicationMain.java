@@ -1415,10 +1415,9 @@ public final class ApplicationMain extends WindowBase {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 if (GlobalContext.getState() == 1) {
-                    boolean isLockedOnlyAnalysisFormat = AppConfig.get().isUseLockedOnlyAnalysisFormat();
                     Clipboard clipboard = new Clipboard(Display.getDefault());
                     clipboard.setContents(
-                            new Object[] { new FleetAnalysis().getShipsFormat(isLockedOnlyAnalysisFormat) },
+                            new Object[] { new FleetAnalysis().getShipsFormat() },
                             new Transfer[] { TextTransfer.getInstance() });
                 }
                 else {
@@ -1440,10 +1439,9 @@ public final class ApplicationMain extends WindowBase {
             public void widgetSelected(SelectionEvent e) {
 
                 if (GlobalContext.getState() == 1) {
-                    boolean isLockedOnlyAnalysisFormat = AppConfig.get().isUseLockedOnlyAnalysisFormat();
                     Clipboard clipboard = new Clipboard(Display.getDefault());
                     clipboard.setContents(
-                            new Object[] { new FleetAnalysis().getItemsFormat(isLockedOnlyAnalysisFormat) },
+                            new Object[] { new FleetAnalysis().getItemsFormat() },
                             new Transfer[] { TextTransfer.getInstance() });
                 }
                 else {
@@ -1470,17 +1468,6 @@ public final class ApplicationMain extends WindowBase {
         });
 
         rootItemFormatter.setMenu(copyItemFormatterMenu);
-
-        new MenuItem(copyItemFormatterMenu, SWT.SEPARATOR);
-        final MenuItem isLockedOnlyAnalysisFormat = new MenuItem(copyItemFormatterMenu, SWT.CHECK);
-        isLockedOnlyAnalysisFormat.setText("ロックしている艦/装備限定");
-        isLockedOnlyAnalysisFormat.setSelection(AppConfig.get().isUseLockedOnlyAnalysisFormat());
-        isLockedOnlyAnalysisFormat.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                AppConfig.get().setUseLockedOnlyAnalysisFormat(isLockedOnlyAnalysisFormat.getSelection());
-            }
-        });
 
         // 選択する項目はドラックで移動できないようにする
         for (Control c : new Control[] { this.commandComposite,

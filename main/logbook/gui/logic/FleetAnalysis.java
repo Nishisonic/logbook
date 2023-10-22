@@ -5,6 +5,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.json.Json;
+import javax.json.JsonObjectBuilder;
 
 import logbook.data.context.GlobalContext;
 import logbook.dto.ItemDto;
@@ -18,44 +19,54 @@ public class FleetAnalysis {
     /**
      * 艦隊分析の艦娘フォーマットを取得します
      *
-     * @param isLockedOnly ロックしている艦娘限定にするか
      * @return フォーマット
      */
-    public String getShipsFormat(boolean isLockedOnly) {
+    public String getShipsFormat() {
         List<ShipDto> ships = GlobalContext.getShipMap().values().stream().collect(Collectors.toList());
-        List<ShipDto> lockedShips = isLockedOnly
-                ? ships.stream().filter(ShipDto::getLocked).collect(Collectors.toList())
-                : ships;
 
-        return "[" + lockedShips.stream().map(ShipDto::getJson)
+        return "[" + ships.stream().map(ShipDto::getJson)
                 .filter(Objects::nonNull)
-                .filter(json -> json.containsKey("api_ship_id") &&
-                        json.containsKey("api_lv") &&
-                        json.containsKey("api_kyouka") &&
-                        json.containsKey("api_exp"))
-                .map(json -> Json.createObjectBuilder()
-                        .add("api_ship_id", json.getInt("api_ship_id"))
-                        .add("api_lv", json.getInt("api_lv"))
-                        .add("api_kyouka", json.getJsonArray("api_kyouka"))
-                        .add("api_exp", json.getJsonArray("api_exp")).build().toString())
+                .map(json -> {
+                    JsonObjectBuilder result = Json.createObjectBuilder();
+                    if (json.containsKey("api_ship_id")) {
+                        result = result.add("api_ship_id", json.getInt("api_ship_id"));
+                    }
+                    if (json.containsKey("api_lv")) {
+                        result = result.add("api_lv", json.getInt("api_lv"));
+                    }
+                    if (json.containsKey("api_kyouka")) {
+                        result = result.add("api_kyouka", json.getJsonArray("api_kyouka"));
+                    }
+                    if (json.containsKey("api_exp")) {
+                        result = result.add("api_exp", json.getJsonArray("api_exp"));
+                    }
+                    if (json.containsKey("api_slot_ex")) {
+                        result = result.add("api_slot_ex", json.getInt("api_slot_ex"));
+                    }
+                    if (json.containsKey("api_sally_area")) {
+                        result = result.add("api_sally_area", json.getInt("api_sally_area"));
+                    }
+                    if (json.containsKey("api_locked")) {
+                        result = result.add("api_locked", json.getInt("api_locked"));
+                    }
+
+                    return result.build().toString();
+                })
                 .collect(Collectors.joining(",")) + "]";
     }
 
     /**
      * 艦隊分析の装備フォーマットを取得します
      *
-     * @param isLockedOnly ロックしている装備限定にするか
      * @return フォーマット
      */
-    public String getItemsFormat(boolean isLockedOnly) {
+    public String getItemsFormat() {
         List<ItemDto> items = GlobalContext.getItemMap().values().stream().collect(Collectors.toList());
-        List<ItemDto> lockedItems = isLockedOnly
-                ? items.stream().filter(ItemDto::isLocked).collect(Collectors.toList())
-                : items;
 
-        return "[" + lockedItems.stream().map(item -> Json.createObjectBuilder()
+        return "[" + items.stream().map(item -> Json.createObjectBuilder()
                 .add("api_slotitem_id", item.getSlotitemId())
-                .add("api_level", item.getLevel()).build().toString()).collect(Collectors.joining(","))
+                .add("api_level", item.getLevel())
+                .add("api_locked", item.isLocked() ? 1 : 0).build().toString()).collect(Collectors.joining(","))
                 + "]";
     }
 }

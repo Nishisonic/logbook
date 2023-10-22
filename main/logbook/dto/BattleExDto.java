@@ -24,6 +24,7 @@ import logbook.internal.EnemyData;
 import logbook.internal.UseItem;
 import logbook.util.JsonUtils;
 
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.dyuproject.protostuff.Tag;
@@ -231,6 +232,9 @@ public class BattleExDto extends AbstractDto {
     private int[] enemy_NowHp;
     @Tag(124)
     private int[] enemy_MaxHp;
+
+    @Tag(140)
+    private boolean isBalloonCell = false;
 
     static {
         // 敵艦IDが+1000された日時
@@ -1570,30 +1574,30 @@ public class BattleExDto extends AbstractDto {
             this.startEnemyHp = new int[numEships];
             this.maxFriendHp = new int[numFships];
             this.maxEnemyHp = new int[numEships];
-            
+
             this.enemy_NowHp = new int[numEships];
             this.enemy_MaxHp = new int[numEships];
-          
+
             for (int i = 0; i < enowhps.size(); i++) {
                 try {
                     this.enemy_NowHp[i] = enowhps.getInt(i);
-                    
-                } catch(ClassCastException e) {
+
+                } catch (ClassCastException e) {
                     // 50は"N/A"の代替値
                     this.enemy_NowHp[i] = 50;
                 }
             }
-            
+
             for (int i = 0; i < emaxhps.size(); i++) {
                 try {
                     this.enemy_MaxHp[i] = emaxhps.getInt(i);
-                    
-                } catch(ClassCastException e) {
+
+                } catch (ClassCastException e) {
                     // 50は"N/A"の代替値
                     this.enemy_MaxHp[i] = 50;
-                }        
+                }
             }
-          
+
             if (isFriendCombined) {
                 this.startFriendHpCombined = new int[numFshipsCombined];
                 this.maxFriendHpCombined = new int[numFshipsCombined];
@@ -1641,6 +1645,11 @@ public class BattleExDto extends AbstractDto {
             // 煙幕
             if (object.containsKey("api_smoke_type")) {
                 this.smokeType = object.getInt("api_smoke_type");
+            }
+
+            // 阻塞気球マス
+            if (object.containsKey("api_balloon_cell")) {
+                this.isBalloonCell = BooleanUtils.toBoolean(object.getInt("api_balloon_cell"));
             }
 
             // 索敵
@@ -2236,6 +2245,14 @@ public class BattleExDto extends AbstractDto {
      */
     public int getSmokeType() {
         return this.smokeType;
+    }
+
+    /**
+     * 阻塞気球発動可能マスか
+     * @return int
+     */
+    public boolean isBalloonCell() {
+        return this.isBalloonCell;
     }
 
     /**
