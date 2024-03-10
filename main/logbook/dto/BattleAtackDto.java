@@ -122,6 +122,81 @@ public class BattleAtackDto {
         return result;
     }
 
+    // 開幕雷撃専用(実質)
+    private static BattleAtackDto makeRaigekiForListItems(boolean friendAtack,
+            JsonArray rai_list, JsonArray dam_list, JsonArray cl_list, JsonArray ydam_list) {
+        // 謎レスポンスの場合があるため、それぞれ配列を用意している
+        // https://github.com/andanteyk/ElectronicObserver/issues/294
+        int oelems = rai_list.size();
+        int telems = dam_list.size();
+        List<Integer> originMap = new ArrayList<>();
+        int[] targetMap = new int[telems];
+        boolean[] targetEnabled = new boolean[telems];
+        BattleAtackDto dto = new BattleAtackDto();
+        dto.kind = AtackKind.RAIGEKI;
+        dto.friendAtack = friendAtack;
+
+        // 与ダメージ部分
+        int idx = 0;
+        for (int i = 0; i < oelems; ++i) {
+            if (!rai_list.isNull(i)) {
+                JsonArray rais = rai_list.getJsonArray(i);
+                for (int j = 0; j < rais.size(); j++) {
+                    int rai = rais.getInt(j);
+                    originMap.add(idx++);
+                    targetEnabled[rai] = true;
+                }
+            }
+        }
+        dto.origin = new int[idx];
+        dto.ydam = new int[idx];
+        dto.critical = new int[idx];
+        dto.ot = new int[idx];
+
+        // 被ダメージ部分
+        // 被ダメージ箇所は旧フォーマットと一緒
+        idx = 0;
+        for (int i = 0; i < telems; ++i) {
+            if (targetEnabled[i]) {
+                targetMap[i] = idx++;
+            }
+        }
+        dto.target = new int[idx];
+        dto.damage = new int[idx];
+
+        // 与ダメージ部分
+        for (int i = 0, j = 0; i < oelems; ++i) {
+            if (!rai_list.isNull(i)) {
+                JsonArray rais = rai_list.getJsonArray(i);
+                JsonArray cls = cl_list.getJsonArray(i);
+                JsonArray ydams = ydam_list.getJsonArray(i);
+                for (int k = 0; k < rais.size(); k++) {
+                    int oidx = originMap.get(j++);
+                    dto.origin[oidx] = i;
+                    dto.ydam[oidx] = ydams.getInt(k);
+                    dto.critical[oidx] = cls.getInt(k);
+                    dto.ot[oidx] = targetMap[rais.getInt(k)];
+                }
+            }
+        }
+
+        // 被ダメージ部分
+        // 被ダメージ箇所は旧フォーマットと一緒
+        for (int i = 0; i < telems; ++i) {
+            int dam = dam_list.getInt(i);
+            if (targetEnabled[i]) {
+                dto.target[targetMap[i]] = i;
+                dto.damage[targetMap[i]] = dam;
+            }
+        }
+
+        // 連合艦隊を考慮した配列構成になっているか
+        // （6-5敵連合艦隊実装まで連合艦隊の雷撃は随伴艦隊だけが受けることになっていたのでelems==6だったが6-5敵連合艦隊では敵の全艦が攻撃を受ける対象となったのでelems==12になった）
+        dto.combineEnabled = true;
+
+        return dto;
+    }
+
     private static BattleAtackDto makeRaigeki(int baseidx, boolean friendAtack,
             JsonArray rai_list, JsonArray dam_list, JsonArray cl_list, JsonArray ydam_list) {
         // originとtargetの個数が違うようになった
@@ -342,39 +417,22 @@ public class BattleAtackDto {
 
         // 開幕雷撃
         if (JsonUtils.hasKey(raigeki, "api_frai_list_items")) {
-
-            fatack = makeRaigeki(
-                    baseidx,
+            fatack = makeRaigekiForListItems(
                     true,
-                    convertNewApiToOldApiMinus(JsonUtils.getJsonArray(raigeki, "api_frai_list_items")),
+                    JsonUtils.getJsonArray(raigeki, "api_frai_list_items"),
                     JsonUtils.getJsonArray(raigeki, "api_edam"),
-                    convertNewApiToOldApiZero(JsonUtils.getJsonArray(raigeki, "api_fcl_list_items")),
-                    convertNewApiToOldApiZero(JsonUtils.getJsonArray(raigeki, "api_fydam_list_items")));
-
-            if ((baseidx == 1) && (fatack.combineEnabled == false)) {
-                // 旧APIとの互換性: 味方の随伴艦のみが雷撃を行う場合(6-5実装以前の連合艦隊はこれ。6-5実装以降の連合艦隊は不明)
-                if (isFriendSecond) {
-                    fatack.makeOriginCombined(friendSecondBase);
-                }
-            }
+                    JsonUtils.getJsonArray(raigeki, "api_fcl_list_items"),
+                    JsonUtils.getJsonArray(raigeki, "api_fydam_list_items"));
             attaks.add(fatack);
         }
 
         if (JsonUtils.hasKey(raigeki, "api_erai_list_items")) {
-            eatack = makeRaigeki(
-                    baseidx,
+            eatack = makeRaigekiForListItems(
                     false,
-                    convertNewApiToOldApiMinus(JsonUtils.getJsonArray(raigeki, "api_erai_list_items")),
+                    JsonUtils.getJsonArray(raigeki, "api_erai_list_items"),
                     JsonUtils.getJsonArray(raigeki, "api_fdam"),
-                    convertNewApiToOldApiZero(JsonUtils.getJsonArray(raigeki, "api_ecl_list_items")),
-                    convertNewApiToOldApiZero(JsonUtils.getJsonArray(raigeki, "api_eydam_list_items")));
-
-            if ((baseidx == 1) && (fatack != null) && (fatack.combineEnabled == false)) {
-                // 旧APIとの互換性: 味方の随伴艦のみが雷撃を受ける場合(6-5実装以前の連合艦隊はこれ。6-5実装以降の連合艦隊は不明)
-                if (isFriendSecond) {
-                    eatack.makeTargetCombined(friendSecondBase);
-                }
-            }
+                    JsonUtils.getJsonArray(raigeki, "api_ecl_list_items"),
+                    JsonUtils.getJsonArray(raigeki, "api_eydam_list_items"));
             attaks.add(eatack);
         }
 
@@ -415,54 +473,6 @@ public class BattleAtackDto {
         }
 
         return attaks;
-    }
-
-    /**
-     * 2024年2月29日 api_opening_atack API仕様変更対応
-     * 入力：新仕様Json Array
-     * 出力：旧仕様Json Array
-     * nullは-1に置換
-     */
-    private static JsonArray convertNewApiToOldApiMinus(JsonArray newApi) {
-        JsonArrayBuilder oldApiBuilder = Json.createArrayBuilder();
-
-        for (JsonValue value : newApi) {
-            if (value.getValueType() == JsonValue.ValueType.ARRAY) {
-                JsonArray array = (JsonArray) value;
-                if (!array.isEmpty()) {
-                    oldApiBuilder.add(array.getInt(0)); // 配列の最初の要素を追加
-                }
-            }
-            else {
-                oldApiBuilder.add(-1); // null の場合は -1 を追加
-            }
-        }
-
-        return oldApiBuilder.build();
-    }
-
-    /**
-     * 2024年2月29日 api_opening_atack API仕様変更対応
-     * 入力：新仕様Json Array
-     * 出力：旧仕様Json Array
-     * nullは0に置換
-     */
-    private static JsonArray convertNewApiToOldApiZero(JsonArray newApi) {
-        JsonArrayBuilder oldApiBuilder = Json.createArrayBuilder();
-
-        for (JsonValue value : newApi) {
-            if (value.getValueType() == JsonValue.ValueType.ARRAY) {
-                JsonArray array = (JsonArray) value;
-                if (!array.isEmpty()) {
-                    oldApiBuilder.add(array.getInt(0)); // 配列の最初の要素を追加
-                }
-            }
-            else {
-                oldApiBuilder.add(0); // null の場合は 0 を追加
-            }
-        }
-
-        return oldApiBuilder.build();
     }
 
     /**
