@@ -266,35 +266,6 @@ public class FleetComposite extends Composite {
         this.hideStrikingForceFleet();
     }
 
-    private int getParam(ItemDto item, String kind) {
-        switch (kind) {
-        case "houg":
-            return item.getParam().getHoug();
-        case "tyku":
-            return item.getParam().getTyku();
-        case "tais":
-            return item.getParam().getTais();
-        case "saku":
-            return item.getParam().getSaku();
-        }
-        return 0;
-    }
-
-    private int getExpeditionPlaneBonus(int[] slots, List<ItemDto> items, String kind) {
-        for (int i = 0; (i < slots.length) && (i < items.size()); i++) {
-            int slot = slots[i];
-            ItemDto item = items.get(i);
-            if (item.isPlane()) {
-                if (slot > 0) {
-                    return (int) Math
-                            .floor(this.getParam(item, kind) * (-0.35 + Math.sqrt(Math.max(0, slot - 2))));
-                }
-                return -this.getParam(item, kind);
-            }
-        }
-        return 0;
-    }
-
     private void hideStrikingForceFleet() {
         this.showStrikingForceFleet = AppConfig.get().isShowStrikingForceFleet();
         this.setRedraw(false);

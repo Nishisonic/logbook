@@ -29,11 +29,6 @@ import logbook.internal.EnemyData;
 import logbook.internal.UseItem;
 import logbook.util.JsonUtils;
 
-import org.apache.commons.lang3.BooleanUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.dyuproject.protostuff.Tag;
-
 /**
  * １回の会敵情報
  * @author Nekopanda
@@ -240,9 +235,6 @@ public class BattleExDto extends AbstractDto {
 
     @Tag(140)
     private boolean isBalloonCell = false;
-
-    @Tag(141)
-    private int smokeType = 0;
 
     @Tag(142)
     private boolean isAtollCell = false;

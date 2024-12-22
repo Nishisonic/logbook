@@ -24,7 +24,7 @@ public class AppConstants {
     public static final String SUFFIX = "拡張版";
 
     /** バージョン */
-    public static final String VERSION = "2.5.7.58";
+    public static final String VERSION = "2.5.7.59";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://github.com/Nishisonic/logbook/releases");
@@ -451,6 +451,7 @@ public class AppConstants {
     };
 
     public static final String[] SHIP_CATEGORY_NAMES = new String[] {
+            "海防艦",
             "駆逐艦",
             "軽巡",
             "雷巡",
@@ -463,6 +464,7 @@ public class AppConstants {
     };
 
     public static final int[][] SHIP_CATEGORY_TYPES = new int[][] {
+            new int[] { 1 }, // 海防艦
             new int[] { 2 }, // 駆逐艦
             new int[] { 3 }, // 軽巡洋艦
             new int[] { 4 }, // 重雷装巡洋艦
@@ -471,7 +473,7 @@ public class AppConstants {
             new int[] { 8, 9, 10 }, // 戦艦
             new int[] { 7, 11, 16, 18 }, // 空母
             new int[] { 13, 14 }, // 潜水艦
-            new int[] { 1, 12, 15, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }, // その他
+            new int[] { 12, 15, 17, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30 }, // その他
     };
 
     /** 1艦隊に編成できる艦娘の数 */

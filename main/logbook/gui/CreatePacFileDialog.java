@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Text;
 public final class CreatePacFileDialog extends Dialog {
 
     protected static final String SCRIPT = "function FindProxyForURL(url, host) '{'\r\n"
-            + "  if (/^{0}/.test(host)) '{'\r\n"
+            + "  if (dnsDomainIs(host, \"{0}\")) '{'\r\n"
             + "     return \"PROXY 127.0.0.1:{1}; DIRECT\";\r\n"
             + "  '}'\r\n"
             + "  return \"DIRECT\";\r\n"
@@ -90,16 +90,16 @@ public final class CreatePacFileDialog extends Dialog {
             Group manualgroup = new Group(composite, SWT.NONE);
             manualgroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             manualgroup.setLayout(new GridLayout(2, false));
-            manualgroup.setText("鎮守府サーバーが未検出です。IPアドレスを入力して下さい。");
+            manualgroup.setText("鎮守府サーバーが未検出です。DNSドメインを入力して下さい。");
 
             Label iplabel = new Label(manualgroup, SWT.NONE);
-            iplabel.setText("IPアドレス:");
+            iplabel.setText("DNSドメイン名:");
 
             final Text text = new Text(manualgroup, SWT.BORDER);
             GridData gdip = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
             gdip.widthHint = SwtUtils.DPIAwareWidth(150);
             text.setLayoutData(gdip);
-            text.setText("0.0.0.0");
+            text.setText("kancolle-server.com");
             text.addModifyListener(new ModifyListener() {
                 @Override
                 public void modifyText(ModifyEvent e) {
@@ -107,7 +107,7 @@ public final class CreatePacFileDialog extends Dialog {
                 }
             });
 
-            this.server = "0.0.0.0";
+            this.server = "kancolle-server.com";
         } else {
             this.server = server;
         }

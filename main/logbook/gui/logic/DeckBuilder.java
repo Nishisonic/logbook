@@ -28,7 +28,6 @@ public class DeckBuilder {
 
     private static final int DECKBUILDER_FORMAT_VERSION = 4;
     private static final double DECKBUILDER_V2_FORMAT_VERSION = 4.2;
-    private static final String DECKBUILDER_URL = "http://kancolle-calc.net/deckbuilder.html";
     private static final String KC_TOOLS_URL = "https://noro6.github.io/kc-web/";
     private static final String FLEET_HUB_URL = "https://jervis.vercel.app/";
 
