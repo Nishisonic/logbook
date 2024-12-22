@@ -2,11 +2,12 @@ package logbook.dto;
 
 import javax.json.JsonObject;
 
-import logbook.constants.AppConstants;
-import logbook.internal.ItemType;
-import logbook.util.JsonUtils;
-
 import com.dyuproject.protostuff.Tag;
+
+import logbook.constants.AppConstants;
+import logbook.internal.ItemCategoryType;
+import logbook.internal.ItemIconType;
+import logbook.util.JsonUtils;
 
 /**
  * 装備を表します
@@ -36,7 +37,7 @@ public final class ItemInfoDto extends AbstractDto {
 
     /**
      * コンストラクター
-     * 
+     *
      * @param object JSON Object
      */
     public ItemInfoDto(JsonObject object) {
@@ -48,7 +49,7 @@ public final class ItemInfoDto extends AbstractDto {
 
     /**
      * コンストラクター
-     * 
+     *
      * @param id
      * @param type2
      * @param type3
@@ -85,8 +86,8 @@ public final class ItemInfoDto extends AbstractDto {
     }
 
     public ItemInfoDto(int id, int type2, int type3, int atap, int bakk, int baku, int houg, int houk, int houm,
-                       int leng, int luck, String name, int raig, int raik, int raim, int rare, int sakb, int saku,
-                       int soku, int souk, int taik, int tais, int tyku, int distance) {
+            int leng, int luck, String name, int raig, int raik, int raim, int rare, int sakb, int saku,
+            int soku, int souk, int taik, int tais, int tyku, int distance) {
         this.id = id;
         this.type[2] = type2;
         this.type[3] = type3;
@@ -114,10 +115,17 @@ public final class ItemInfoDto extends AbstractDto {
     }
 
     /**
-     * @return 表示分類名
+     * @return アイコン表示分類名
      */
     public String getTypeName() {
-        return ItemType.get(this.type[3]);
+        return ItemIconType.get(this.type[3]);
+    }
+
+    /**
+     * @return カテゴリ表示分類名
+     */
+    public String getTypeName2() {
+        return ItemCategoryType.get(this.type[2]);
     }
 
     /**

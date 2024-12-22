@@ -787,24 +787,26 @@ public final class ApplicationMain extends WindowBase {
         this.commandComposite.setLayout(new FillLayout(SWT.HORIZONTAL));
         this.commandComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        this.itemList = new Button(this.commandComposite, SWT.PUSH);
-        this.itemList.setText("所有装備(0/0)");
-        this.itemList.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ApplicationMain.this.itemTableWindow.open();
-                ApplicationMain.this.itemTableWindow.getShell().setActive();
-            }
-        });
-        this.shipList = new Button(this.commandComposite, SWT.PUSH);
-        this.shipList.setText("所有艦娘(0/0)");
-        this.shipList.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                ApplicationMain.this.shipTableWindows[0].open();
-                ApplicationMain.this.shipTableWindows[0].getShell().setActive();
-            }
-        });
+        if (AppConfig.get().isUsePortButton()) {
+            this.itemList = new Button(this.commandComposite, SWT.PUSH);
+            this.itemList.setText("所有装備(0/0)");
+            this.itemList.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ApplicationMain.this.itemTableWindow.open();
+                    ApplicationMain.this.itemTableWindow.getShell().setActive();
+                }
+            });
+            this.shipList = new Button(this.commandComposite, SWT.PUSH);
+            this.shipList.setText("所有艦娘(0/0)");
+            this.shipList.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    ApplicationMain.this.shipTableWindows[0].open();
+                    ApplicationMain.this.shipTableWindows[0].getShell().setActive();
+                }
+            });
+        }
 
         // タブフォルダー
         this.tabFolder = new CTabFolder(this.shell, SWT.NONE);
@@ -1022,7 +1024,7 @@ public final class ApplicationMain extends WindowBase {
         this.airbaseCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateAirbase();
+                ApplicationMain.this.updateAirbase();
             }
         });
 
@@ -1037,7 +1039,7 @@ public final class ApplicationMain extends WindowBase {
         this.mapHpInfoCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                updateMapHpInfo();
+                ApplicationMain.this.updateMapHpInfo();
             }
         });
 
@@ -1197,11 +1199,11 @@ public final class ApplicationMain extends WindowBase {
         });
 
         final MenuItem rootCopyDeckBuilder = new MenuItem(this.getPopupMenu(), SWT.CASCADE);
-        rootCopyDeckBuilder.setText("デッキビルダー");
+        rootCopyDeckBuilder.setText("デッキビルダーフォーマット");
         Menu copyDeckBuilderMenu = new Menu(rootCopyDeckBuilder);
 
         final MenuItem copyDeckBuilderURL = new MenuItem(copyDeckBuilderMenu, SWT.PUSH);
-        copyDeckBuilderURL.setText("編成をコピー(デッキビルダー URL)");
+        copyDeckBuilderURL.setText("デッキビルダー方式の編成フォーマットをコピー(基地航空隊を含まない)");
 
         copyDeckBuilderURL.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1226,8 +1228,36 @@ public final class ApplicationMain extends WindowBase {
                 }
             }
         });
+        final MenuItem copyDeckBuilderAAURL = new MenuItem(copyDeckBuilderMenu, SWT.PUSH);
+        copyDeckBuilderAAURL.setText("デッキビルダー方式の編成フォーマットをコピー(基地航空隊を含む)");
+
+        copyDeckBuilderAAURL.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                boolean[] isUseCopyDeckBuilders = {
+                        AppConfig.get().isUseCopyDeckBuilder1(),
+                        AppConfig.get().isUseCopyDeckBuilder2(),
+                        AppConfig.get().isUseCopyDeckBuilder3(),
+                        AppConfig.get().isUseCopyDeckBuilder4() };
+                if (GlobalContext.getState() == 1) {
+                    int areaId = AppConfig.get().getUseAirbaseAreaId();
+                    Clipboard clipboard = new Clipboard(Display.getDefault());
+                    clipboard.setContents(
+                            new Object[] { DeckBuilder.toDeckBuilderAAURL(isUseCopyDeckBuilders, areaId) },
+                            new Transfer[] { TextTransfer.getInstance() });
+                }
+                else {
+                    Shell shell = new Shell(Display.getDefault(), SWT.TOOL);
+                    MessageBox mes = new MessageBox(shell, SWT.ICON_WARNING | SWT.OK);
+                    mes.setText(AppConstants.TITLEBAR_TEXT);
+                    mes.setMessage("情報が不足しています。艦これをリロードしてデータを読み込んでください。");
+                    mes.open();
+                    shell.dispose();
+                }
+            }
+        });
         final MenuItem copyKcToolsURL = new MenuItem(copyDeckBuilderMenu, SWT.PUSH);
-        copyKcToolsURL.setText("編成をコピー(制空権シミュレータ URL)");
+        copyKcToolsURL.setText("「制空権シミュレータV2」のURLを含む編成をコピー");
 
         copyKcToolsURL.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1255,7 +1285,7 @@ public final class ApplicationMain extends WindowBase {
             }
         });
         final MenuItem copyFleetHubURL = new MenuItem(copyDeckBuilderMenu, SWT.PUSH);
-        copyFleetHubURL.setText("編成をコピー(作戦室 URL)");
+        copyFleetHubURL.setText("「作戦室」のURLを含む編成をコピー");
 
         copyFleetHubURL.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -1405,7 +1435,7 @@ public final class ApplicationMain extends WindowBase {
         rootFleetFormatter.setMenu(copyFleetFormatterMenu);
 
         final MenuItem rootItemFormatter = new MenuItem(this.getPopupMenu(), SWT.CASCADE);
-        rootItemFormatter.setText("艦隊分析ページ");
+        rootItemFormatter.setText("旧艦隊分析ページフォーマット");
         Menu copyItemFormatterMenu = new Menu(rootItemFormatter);
 
         final MenuItem copyShipFormat = new MenuItem(copyItemFormatterMenu, SWT.PUSH);
@@ -2298,7 +2328,7 @@ public final class ApplicationMain extends WindowBase {
     }
 
     public void updateResultRecord() {
-        updateResultRecord(AppConfig.get().isMinimumLayout());
+        this.updateResultRecord(AppConfig.get().isMinimumLayout());
     }
 
     public void updateResultRecord(boolean isMinimumLayout) {
@@ -2311,21 +2341,21 @@ public final class ApplicationMain extends WindowBase {
                 r.getAcquiredAdmiralExpOfMonth(), r.getAcquiredValueOfMonth());
         // 縮小表示にした際、大きくレイアウトが崩れるため表示変更
         if (isMinimumLayout) {
-            resultRecordLabel.setText("戦果");
+            this.resultRecordLabel.setText("戦果");
         }
         else {
-            resultRecordLabel.setText(String.format("戦果　今回: %8.2f / 今日: %8.2f / 今月: %8.2f",
+            this.resultRecordLabel.setText(String.format("戦果　今回: %8.2f / 今日: %8.2f / 今月: %8.2f",
                     r.getAcquiredValueOfHalfDay(),
                     r.getAcquiredValueOfDay(),
                     r.getAcquiredValueOfMonth()));
         }
-        resultRecordLabel.setToolTipText(resultRecordTooltipText);
-        admiralExpLabel.setText(String.format("%d exp.", r.getNowAdmiralExp()));
-        admiralExpLabel.setToolTipText(resultRecordTooltipText);
+        this.resultRecordLabel.setToolTipText(resultRecordTooltipText);
+        this.admiralExpLabel.setText(String.format("%d exp.", r.getNowAdmiralExp()));
+        this.admiralExpLabel.setToolTipText(resultRecordTooltipText);
     }
 
     public void updateAirbase() {
-        updateAirbase(AppConfig.get().isMinimumLayout());
+        this.updateAirbase(AppConfig.get().isMinimumLayout());
     }
 
     public void updateAirbase(boolean isMinimumLayout) {
@@ -2416,7 +2446,7 @@ public final class ApplicationMain extends WindowBase {
                 int slotitemId = planeInfo.getSlotitemId();
                 if (slotitemId > 0) {
                     result += "[" + now + "/" + max + "]:" + planeInfo.getName()
-                            + toLevelString(planeInfo.getLevel()) + " " + toAlvString(planeInfo.getAlv())
+                            + this.toLevelString(planeInfo.getLevel()) + " " + this.toAlvString(planeInfo.getAlv())
                             + " (半径:" + planeInfo.getParam().getDistance() + ")\r\n";
                 }
                 else {
@@ -2438,8 +2468,8 @@ public final class ApplicationMain extends WindowBase {
                 int current = 0;
                 int max = 0;
 
-                if (mapinfo.getRequiredDefeatCount() != -1
-                        && mapinfo.getDefeatCount() < mapinfo.getRequiredDefeatCount()) {
+                if ((mapinfo.getRequiredDefeatCount() != -1)
+                        && (mapinfo.getDefeatCount() < mapinfo.getRequiredDefeatCount())) {
                     gaugeType = 1;
                     current = mapinfo.getDefeatCount();
                     max = mapinfo.getRequiredDefeatCount();
@@ -2468,7 +2498,7 @@ public final class ApplicationMain extends WindowBase {
             });
 
             if (info.size() > 0) {
-                this.mapHpInfoCombo.select(select < 0 && select < info.size() ? 0 : select);
+                this.mapHpInfoCombo.select((select < 0) && (select < info.size()) ? 0 : select);
             }
         });
     }

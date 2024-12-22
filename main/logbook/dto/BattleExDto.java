@@ -18,6 +18,11 @@ import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonValue;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.dyuproject.protostuff.Tag;
+
 import logbook.constants.AppConstants;
 import logbook.data.context.GlobalContext;
 import logbook.internal.EnemyData;
@@ -235,6 +240,12 @@ public class BattleExDto extends AbstractDto {
 
     @Tag(140)
     private boolean isBalloonCell = false;
+
+    @Tag(141)
+    private int smokeType = 0;
+
+    @Tag(142)
+    private boolean isAtollCell = false;
 
     static {
         // 敵艦IDが+1000された日時
@@ -573,7 +584,7 @@ public class BattleExDto extends AbstractDto {
                     kind.isOpeningSecond(),
                     this.isEnemySecond, true);
 
-            // 開幕
+            // 開幕雷撃
             this.opening = BattleAtackDto.makeRaigeki(baseidx, battle.friendSecondBase,
                     JsonUtils.getJsonObject(object, "api_opening_atack"),
                     kind.isOpeningSecond());
@@ -642,7 +653,7 @@ public class BattleExDto extends AbstractDto {
             this.doAtack(this.raigeki, battle.friendSecondBase, this.isFriendFleet, battle);
             this.doAtack(this.hougeki2, battle.friendSecondBase, this.isFriendFleet, battle);
             this.doAtack(this.hougeki3, battle.friendSecondBase, this.isFriendFleet, battle);
-            if (isFriendFleet) {
+            if (this.isFriendFleet) {
                 // １つのjsonファイルの中に友軍艦隊の砲撃と自艦隊の砲撃の２つの処理が存在する場合
                 this.doAtack(this.hougeki_f, battle.friendSecondBase, this.isFriendFleet, battle);
                 this.doAtack(this.hougeki, battle.friendSecondBase, false, battle);
@@ -810,10 +821,10 @@ public class BattleExDto extends AbstractDto {
             double friendGaugeRate = Math.floor(this.damageRate[0] * 100);
             double enemyGaugeRate = Math.floor(this.damageRate[1] * 100);
 
-            if (this.kind == BattlePhaseKind.LD_AIRBATTLE ||
-                    this.kind == BattlePhaseKind.LD_SHOOTING ||
-                    this.kind == BattlePhaseKind.COMBINED_LD_AIR ||
-                    this.kind == BattlePhaseKind.COMBINED_LD_SHOOTING) {
+            if ((this.kind == BattlePhaseKind.LD_AIRBATTLE) ||
+                    (this.kind == BattlePhaseKind.LD_SHOOTING) ||
+                    (this.kind == BattlePhaseKind.COMBINED_LD_AIR) ||
+                    (this.kind == BattlePhaseKind.COMBINED_LD_SHOOTING)) {
                 // 空襲戦  または レーダー射撃戦
                 // S勝利は発生しないと思われる(完全勝利Sのみ)
                 if (friendGaugeMax <= friendGauge) {
@@ -1652,6 +1663,11 @@ public class BattleExDto extends AbstractDto {
                 this.isBalloonCell = BooleanUtils.toBoolean(object.getInt("api_balloon_cell"));
             }
 
+            // 環礁マス
+            if (object.containsKey("api_atoll_cell")) {
+                this.isAtollCell = BooleanUtils.toBoolean(object.getInt("api_atoll_cell"));
+            }
+
             // 索敵
             JsonArray jsonSearch = JsonUtils.getJsonArray(object, "api_search");
             if (jsonSearch != null) {
@@ -2253,6 +2269,14 @@ public class BattleExDto extends AbstractDto {
      */
     public boolean isBalloonCell() {
         return this.isBalloonCell;
+    }
+
+    /**
+     * 環礁マスか
+     * @return int
+     */
+    public boolean isAtollCell() {
+        return this.isAtollCell;
     }
 
     /**

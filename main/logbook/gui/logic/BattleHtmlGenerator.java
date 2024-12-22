@@ -3,20 +3,40 @@
  */
 package logbook.gui.logic;
 
-import logbook.config.AppConfig;
-import logbook.constants.AppConstants;
-import logbook.dto.*;
-import logbook.dto.BattleExDto.Phase;
-import logbook.internal.Item;
-import logbook.internal.MapEdges;
-
-import org.apache.commons.lang3.StringUtils;
-
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.StringUtils;
+
+import logbook.config.AppConfig;
+import logbook.constants.AppConstants;
+import logbook.dto.AirBattleDto;
+import logbook.dto.AirbaseDto;
+import logbook.dto.AtackKind;
+import logbook.dto.BattleAtackDto;
+import logbook.dto.BattleExDto;
+import logbook.dto.BattleExDto.Phase;
+import logbook.dto.BattlePhaseKind;
+import logbook.dto.BattleResultDto;
+import logbook.dto.EnemyShipDto;
+import logbook.dto.ItemDto;
+import logbook.dto.MapCellDto;
+import logbook.dto.ShipBaseDto;
+import logbook.dto.ShipDto;
+import logbook.dto.ShipParameters;
+import logbook.dto.SquadronDto;
+import logbook.dto.StartAirbaseDto;
+import logbook.internal.Item;
+import logbook.internal.MapEdges;
 
 /**
  * @author Nekopanda
@@ -308,7 +328,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
 
     private <SHIP extends ShipBaseDto> void genFriendlyFleetParmeters(Phase phase) {
         List<EnemyShipDto> fleet = phase.getFriendlyFleet();
-        if (fleet == null || fleet.size() == 0) {
+        if ((fleet == null) || (fleet.size() == 0)) {
             return;
         }
 
@@ -408,7 +428,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                             onSlot = cur + "/" + max;
                         }
                         itemName += item.getFriendlyName();
-                        tooltip += getItemParamTooltipContents(item);
+                        tooltip += this.getItemParamTooltipContents(item);
                     }
                 }
                 this.inline("td title='" + tooltip + "'", itemName, null);
@@ -420,7 +440,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 ItemDto dto = ((ShipDto) ship).getSlotExItem();
                 if (dto != null) {
                     itemName = dto.getFriendlyName();
-                    tooltip = getItemParamTooltipContents(dto);
+                    tooltip = this.getItemParamTooltipContents(dto);
                 }
                 this.inline("td title='" + tooltip + "'", itemName, null);
             }
@@ -454,10 +474,10 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             AirbaseDto airbase = airbases.get(i);
             this.inline("td", "第" + (i + 1) + "航空隊", null);
             String strikePoint = "";
-            if (airbase.getActionKind() == 1 && Objects.nonNull(startAirbase)
+            if ((airbase.getActionKind() == 1) && Objects.nonNull(startAirbase)
                     && Objects.nonNull(startAirbase.getStrikePoint(i + 1))) {
                 String[] mapEdge = MapEdges.get(mapCellDto.getMap());
-                if (AppConfig.get().isUseAlphabetizeMap() && Objects.nonNull(mapEdge) && mapEdge.length > 1) {
+                if (AppConfig.get().isUseAlphabetizeMap() && Objects.nonNull(mapEdge) && (mapEdge.length > 1)) {
                     strikePoint = "(" + Arrays.stream(startAirbase.getStrikePoint(i + 1)).mapToObj(j -> {
                         return mapEdge[1] + "(" + ((Integer) j).toString() + ")";
                     }).collect(Collectors.joining(",")) + ")";
@@ -478,7 +498,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 if (sq.isNotEmptySlot()) {
                     onSlot += sq.getCount() + "/" + sq.getMaxCount();
                     itemName += sq.getFriendlyName();
-                    tooltip += getItemParamTooltipContents(sq);
+                    tooltip += this.getItemParamTooltipContents(sq);
                 }
 
                 this.inline("td title='" + tooltip + "'", itemName, null);
@@ -574,14 +594,14 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 .filter(ship -> ship.getItem2().stream().filter(Objects::nonNull)
                         .anyMatch(item -> item.getType3() == 55))
                 .count(), 3);
-        this.inline("td", battle.isBalloonCell() && friendBalloon > 0 ? "x" + friendBalloon : "", null);
+        this.inline("td", battle.isBalloonCell() && (friendBalloon > 0) ? "x" + friendBalloon : "", null);
         this.end(); // tr
         this.begin("tr", FORMATION_CLASS[1]);
         this.inline("td", "敵", null);
         this.inline("td", battle.getFormation()[1], null);
         this.inline("td", eSakuteki, null);
         this.inline("td", "", null);
-        this.inline("td", battle.isBalloonCell() && enemyBalloon > 0 ? "x" + enemyBalloon : "", null);
+        this.inline("td", battle.isBalloonCell() && (enemyBalloon > 0) ? "x" + enemyBalloon : "", null);
         this.end(); // tr
         this.end(); // table
     }
@@ -777,14 +797,15 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                 if (HTypeS.equals("潜水艦隊攻撃")) {
                     int count = atack.damage.length;
                     // 潜水艦隊攻撃
-                    int idx = (type == 300 || type == 302) && (i == 0 || count == 4 && i == 1) ? 1
-                            : (type == 300 && i >= 2 || type == 301 && (i == 0 || count == 4 && i == 1)) ? 2
-                                    : (type == 301 || type == 302) && (i >= 2) ? 3
-                                            : -1;
+                    int idx = ((type == 300) || (type == 302)) && ((i == 0) || ((count == 4) && (i == 1))) ? 1
+                            : (((type == 300) && (i >= 2))
+                                    || ((type == 301) && ((i == 0) || ((count == 4) && (i == 1))))) ? 2
+                                            : ((type == 301) || (type == 302)) && (i >= 2) ? 3
+                                                    : -1;
 
                     this.inline("td", text[0], null);
                     if (idx > 0) {
-                        String tooltipText = getHpString(originHp[idx], maxOriginHp[idx]);
+                        String tooltipText = this.getHpString(originHp[idx], maxOriginHp[idx]);
                         this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, idx), textClass[0]);
                     }
                     else {
@@ -795,7 +816,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                     // 連合かつ僚艦夜戦突撃のときapi_at_list=0だった悲しみ
                     offset = isOriginCombined && HTypeS.equals("僚艦夜戦突撃") ? 6 : 0;
 
-                    String tooltipText = getHpString(originHp[atack.origin[0] + offset],
+                    String tooltipText = this.getHpString(originHp[atack.origin[0] + offset],
                             maxOriginHp[atack.origin[0] + offset]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'",
@@ -803,39 +824,39 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                             textClass[0]);
                 }
                 else if ((i == 1) && (HTypeS.equals("ネルソンタッチ"))) {
-                    String tooltipText = getHpString(originHp[2], maxOriginHp[2]);
+                    String tooltipText = this.getHpString(originHp[2], maxOriginHp[2]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 2), textClass[0]);
                 }
                 else if ((i == 2) && (HTypeS.equals("ネルソンタッチ"))) {
-                    String tooltipText = getHpString(originHp[4], maxOriginHp[4]);
+                    String tooltipText = this.getHpString(originHp[4], maxOriginHp[4]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 4), textClass[0]);
                 }
                 else if ((i == 1) && (HTypeS.equals("一斉射かッ…胸が熱いな！") || HTypeS.equals("長門、いい？ いくわよ！ 主砲一斉射ッ！")
-                        || HTypeS.equals("第一戦隊、突撃！主砲、全力斉射ッ！"))) {
-                    String tooltipText = getHpString(originHp[0], maxOriginHp[0]);
+                        || HTypeS.equals("第一戦隊、突撃！主砲、全力斉射ッ！") || HTypeS.equals("Richelieuよ！圧倒しなさいっ！"))) {
+                    String tooltipText = this.getHpString(originHp[0], maxOriginHp[0]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 0), textClass[0]);
                 }
                 else if ((i == 2) && (HTypeS.equals("一斉射かッ…胸が熱いな！") || HTypeS.equals("長門、いい？ いくわよ！ 主砲一斉射ッ！")
-                        || HTypeS.equals("第一戦隊、突撃！主砲、全力斉射ッ！"))) {
-                    String tooltipText = getHpString(originHp[1], maxOriginHp[1]);
+                        || HTypeS.equals("第一戦隊、突撃！主砲、全力斉射ッ！") || HTypeS.equals("Richelieuよ！圧倒しなさいっ！"))) {
+                    String tooltipText = this.getHpString(originHp[1], maxOriginHp[1]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 1), textClass[0]);
                 }
                 else if ((i == 1) && (HTypeS.equals("コロラド特殊攻撃") || HTypeS.equals("大和、突撃します！二番艦も続いてください！"))) {
-                    String tooltipText = getHpString(originHp[1], maxOriginHp[1]);
+                    String tooltipText = this.getHpString(originHp[1], maxOriginHp[1]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 1), textClass[0]);
                 }
                 else if ((i == 2) && (HTypeS.equals("コロラド特殊攻撃") || HTypeS.equals("大和、突撃します！二番艦も続いてください！"))) {
-                    String tooltipText = getHpString(originHp[2], maxOriginHp[2]);
+                    String tooltipText = this.getHpString(originHp[2], maxOriginHp[2]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'", this.getShipName(origin, 2), textClass[0]);
                 }
                 else if ((i == 1) && (HTypeS.equals("僚艦夜戦突撃"))) {
-                    String tooltipText = getHpString(originHp[atack.origin[0] + offset + 1],
+                    String tooltipText = this.getHpString(originHp[atack.origin[0] + offset + 1],
                             maxOriginHp[atack.origin[0] + offset + 1]);
                     this.inline("td", text[0], null);
                     this.inline("td", "title='" + tooltipText + "'",
@@ -1164,7 +1185,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             this.inline("h3", "自軍攻撃", null);
         }
 
-        if ((phase.getAirBaseInjection() != null || phase.getAirBase() != null) && battle.getAirbases() != null) {
+        if (((phase.getAirBaseInjection() != null) || (phase.getAirBase() != null)) && (battle.getAirbases() != null)) {
             this.inline("h3", "基地航空隊", null);
             this.genAirbaseSlotitemTable(battle.getAirbases(), battle.getMapCellDto(), battle.getStartAirbase());
         }
@@ -1215,8 +1236,14 @@ public class BattleHtmlGenerator extends HTMLGenerator {
                     this.end(); // table
                 }
                 if (phase.getOpening() != null) {
-                    this.genRaigekiBattle(phase.getOpening(), "開幕",
-                            friendShips, enemyShips, friendHp, enemyHp);
+                    if (battle.isAtollCell() != true) {
+                        this.genRaigekiBattle(phase.getOpening(), "開幕雷撃 (通常雷撃)",
+                                friendShips, enemyShips, friendHp, enemyHp);
+                    }
+                    else {
+                        this.genRaigekiBattle(phase.getOpening(), "開幕雷撃 (内火艇攻撃)",
+                                friendShips, enemyShips, friendHp, enemyHp);
+                    }
                 }
             }
         }
@@ -1479,7 +1506,7 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             if (Objects.nonNull(mapCellDto) && Objects.nonNull(mapCellDto.getMap())) {
                 LinkedList<Integer> passedEdges = battle.getPassedEdges();
                 int[] map = mapCellDto.getMap();
-                if (Objects.nonNull(passedEdges) && passedEdges.size() > 0) {
+                if (Objects.nonNull(passedEdges) && (passedEdges.size() > 0)) {
                     String edgesHeader = "";
                     if (AppConfig.get().isUseAlphabetizeMap()) {
                         String[] start = MapEdges.get(new int[] { map[0], map[1], passedEdges.get(0) });

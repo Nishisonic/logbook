@@ -13,24 +13,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.CheckForNull;
 
-import logbook.config.AppConfig;
-import logbook.constants.AppConstants;
-import logbook.data.context.GlobalContext;
-import logbook.data.context.TimerContext;
-import logbook.dto.DeckMissionDto;
-import logbook.dto.DockDto;
-import logbook.dto.ItemDto;
-import logbook.dto.ItemInfoDto;
-import logbook.dto.ShipDto;
-import logbook.gui.logic.*;
-import logbook.internal.AkashiTimer;
-import logbook.internal.CondTiming;
-import logbook.internal.EvaluateExp;
-import logbook.internal.LoggerHolder;
-import logbook.internal.SeaExp;
-import logbook.util.CalcExpUtils;
-import logbook.util.SwtUtils;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
@@ -44,6 +26,34 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.wb.swt.SWTResourceManager;
+
+import logbook.config.AppConfig;
+import logbook.constants.AppConstants;
+import logbook.data.context.GlobalContext;
+import logbook.data.context.TimerContext;
+import logbook.dto.DeckMissionDto;
+import logbook.dto.DockDto;
+import logbook.dto.ItemDto;
+import logbook.dto.ItemInfoDto;
+import logbook.dto.ShipDto;
+import logbook.gui.logic.AviationDetectionString;
+import logbook.gui.logic.CalcAA;
+import logbook.gui.logic.ColorManager;
+import logbook.gui.logic.DaihatsuString;
+import logbook.gui.logic.DamageRate;
+import logbook.gui.logic.LayoutLogic;
+import logbook.gui.logic.SakutekiString;
+import logbook.gui.logic.SeikuString;
+import logbook.gui.logic.TPString;
+import logbook.gui.logic.TimeLogic;
+import logbook.gui.logic.TimeString;
+import logbook.internal.AkashiTimer;
+import logbook.internal.CondTiming;
+import logbook.internal.EvaluateExp;
+import logbook.internal.LoggerHolder;
+import logbook.internal.SeaExp;
+import logbook.util.CalcExpUtils;
+import logbook.util.SwtUtils;
 
 /**
  * 艦隊タブのウィジェットです
@@ -271,15 +281,15 @@ public class FleetComposite extends Composite {
     }
 
     private int getExpeditionPlaneBonus(int[] slots, List<ItemDto> items, String kind) {
-        for (int i = 0; i < slots.length && i < items.size(); i++) {
+        for (int i = 0; (i < slots.length) && (i < items.size()); i++) {
             int slot = slots[i];
             ItemDto item = items.get(i);
             if (item.isPlane()) {
                 if (slot > 0) {
                     return (int) Math
-                            .floor(getParam(item, kind) * (-0.35 + Math.sqrt(Math.max(0, slot - 2))));
+                            .floor(this.getParam(item, kind) * (-0.35 + Math.sqrt(Math.max(0, slot - 2))));
                 }
-                return -getParam(item, kind);
+                return -this.getParam(item, kind);
             }
         }
         return 0;
@@ -401,7 +411,7 @@ public class FleetComposite extends Composite {
             List<ItemDto> itemList = _itemList.stream().filter(Objects::nonNull).collect(Collectors.toList());
             int[] onslot = ship.getOnSlot();
             // 艦隊合計火力値(装備込)
-            totalFirepower += ship.getKaryoku() + getExpeditionPlaneBonus(onslot, itemList, "houg") + itemList.stream()
+            totalFirepower += ship.getKaryoku() + itemList.stream()
                     .mapToDouble(item -> {
                         switch (item.getType2()) {
                         case 1: // 小口径主砲
@@ -409,8 +419,10 @@ public class FleetComposite extends Composite {
                         case 2: // 中口径主砲
                             return Math.sqrt(item.getLevel());
                         case 3: // 大口径主砲
+                        case 38:
                             return Math.sqrt(item.getLevel());
                         case 4: // 副砲
+                        case 95:
                             return 0.5 * Math.sqrt(item.getLevel());
                         case 12: // 小型電探
                             return 0.5 * Math.sqrt(item.getLevel());
@@ -425,7 +437,7 @@ public class FleetComposite extends Composite {
                         return 0;
                     }).sum();
             // 艦隊合計索敵値(装備込)
-            totalLOS += ship.getSakuteki() + getExpeditionPlaneBonus(onslot, itemList, "saku") + itemList.stream()
+            totalLOS += ship.getSakuteki() + itemList.stream()
                     .mapToDouble(item -> {
                         switch (item.getType2()) {
                         case 10: // 水上偵察機
@@ -438,7 +450,7 @@ public class FleetComposite extends Composite {
                         return 0;
                     }).sum();
             // 艦隊合計対潜値(装備込)
-            totalASW += ship.getTaisen() + getExpeditionPlaneBonus(onslot, itemList, "tais")
+            totalASW += ship.getTaisen()
                     + itemList.stream()
                             .mapToDouble(item -> {
                                 switch (item.getType2()) {
@@ -464,7 +476,7 @@ public class FleetComposite extends Composite {
                                 return 0;
                             }).sum();
             // 艦隊合計対空値(装備込)
-            totalAA += ship.getTaiku() + getExpeditionPlaneBonus(onslot, itemList, "tyku") + itemList.stream()
+            totalAA += ship.getTaiku() + itemList.stream()
                     .mapToDouble(item -> {
                         switch (item.getType3()) {
                         case 15: // 機銃
@@ -877,13 +889,17 @@ public class FleetComposite extends Composite {
             this.addStyledText(this.message, AppConstants.MESSAGE_COMBINED, messageStyle);
         }
         this.addStyledText(this.message, "\n", null);
+        // 合計Lv
+        this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_TOTAL_LV, totallv), null);
+
+        this.addStyledText(this.message, "\n", null);
         // 制空
         SeikuString seikuString = new SeikuString(ships);
         this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_SEIKU, seikuString.toString()),
                 null);
         if (lostPlanes > 0) {
             this.addStyledText(this.message,
-                    MessageFormat.format("損失機:{0}(ボーキ:{1})", lostPlanes, lostPlanes * 5), null);
+                    MessageFormat.format("\n損失機:{0}(ボーキ:{1})", lostPlanes, lostPlanes * 5), null);
         }
         this.addStyledText(this.message, "\n", null);
         // 索敵
@@ -916,8 +932,6 @@ public class FleetComposite extends Composite {
         this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_EXPEDITION, totalFirepower,
                 totalAA, totalASW, totalLOS), null);
         this.addStyledText(this.message, "\n", null);
-        // 合計Lv
-        this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_TOTAL_LV, totallv), null);
 
         // 航空偵察スコア
         AviationDetectionString aviationDetectionString = new AviationDetectionString(ships);
@@ -931,19 +945,27 @@ public class FleetComposite extends Composite {
             // ドラム缶合計数
             this.addStyledText(this.message, MessageFormat.format(AppConstants.MESSAGE_TOTAL_DRAM, dram, dramKanmusu),
                     null);
+            if (daihatsu.getUp() > 0.0) {
+                this.addStyledText(this.message, " / ", null);
+            }
+            else {
+                this.addStyledText(this.message, "\n", null);
+            }
         }
         if (daihatsu.getUp() > 0.0) {
             // 大発合計数
             this.addStyledText(this.message, daihatsu.toString(), null);
+            this.addStyledText(this.message, "\n", null);
         }
 
         // TP獲得量
         this.addStyledText(this.message, new TPString(ships).toString(), null);
 
         this.addStyledText(this.message, "\n", null);
+
+        // 前回の遠征
         if ((currentMission != null) && (currentMission.getMission() == null)
                 && (previousMission.getMission() != null)) {
-            // 前回の遠征
             String text = previousMission.getDisplayText("missioncheck_" + dock.getId() + "p");
             this.addStyledText(this.message,
                     MessageFormat.format(AppConstants.MESSAGE_PREVIOUS_MISSION, text), null);

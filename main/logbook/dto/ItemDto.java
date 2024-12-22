@@ -7,9 +7,9 @@ import java.beans.Transient;
 
 import javax.json.JsonObject;
 
-import logbook.internal.Item;
-
 import com.dyuproject.protostuff.Tag;
+
+import logbook.internal.Item;
 
 /**
  * 個別装備
@@ -166,11 +166,19 @@ public class ItemDto extends AbstractDto {
     }
 
     /**
-     * 表示分類名
+     * アイコン表示分類名
      * @return 表示分類名
      */
     public String getTypeName() {
         return this.getInfo().getTypeName();
+    }
+
+    /**
+     * カテゴリ表示分類名
+     * @return 表示分類名
+     */
+    public String getTypeName2() {
+        return this.getInfo().getTypeName2();
     }
 
     /**

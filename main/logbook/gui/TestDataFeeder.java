@@ -8,12 +8,6 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.util.Arrays;
 
-import logbook.data.Data;
-import logbook.data.DataType;
-import logbook.data.TestData;
-import logbook.data.context.GlobalContext;
-import logbook.util.SwtUtils;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.MouseWheelListener;
@@ -25,6 +19,12 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+
+import logbook.data.Data;
+import logbook.data.DataType;
+import logbook.data.TestData;
+import logbook.data.context.GlobalContext;
+import logbook.util.SwtUtils;
 
 /**
  * @author Nekopanda

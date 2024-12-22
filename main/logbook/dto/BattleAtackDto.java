@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package logbook.dto;
 
@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 import javax.json.JsonArray;
 import javax.json.JsonObject;
 
+import com.dyuproject.protostuff.Tag;
+
 import logbook.internal.Item;
 import logbook.util.JsonUtils;
-
-import com.dyuproject.protostuff.Tag;
 
 /**
  * 攻撃シーケンス
@@ -579,7 +579,7 @@ public class BattleAtackDto {
         case 6:
             return "カットイン(主砲/主砲)";
         case 7:
-            return "戦爆連合カットイン(" + toShowItemTypeString(showitem, true) + ")";
+            return "戦爆連合カットイン(" + this.toShowItemTypeString(showitem, true) + ")";
         case 100:
             return "ネルソンタッチ";
         case 101:
@@ -590,6 +590,8 @@ public class BattleAtackDto {
             return "コロラド特殊攻撃";
         case 104:
             return "僚艦夜戦突撃";
+        case 105:
+            return "Richelieuよ！圧倒しなさいっ！";
         case 200:
             return "瑞雲立体攻撃";
         case 201:
@@ -602,6 +604,8 @@ public class BattleAtackDto {
             return "大和、突撃します！二番艦も続いてください！";
         case 401:
             return "第一戦隊、突撃！主砲、全力斉射ッ！";
+        case 1000:
+            return "特四式内火艇攻撃";
         }
         return "不明(" + this.type + ")";
     }
@@ -624,14 +628,14 @@ public class BattleAtackDto {
         case 5:
             return "カットイン(主砲/主砲/主砲)";
         case 6:
-            return "夜襲カットイン(" + toShowItemTypeString(showitem, false) + ")";
+            return "夜襲カットイン(" + this.toShowItemTypeString(showitem, false) + ")";
         case 7:
         case 11:
             return "駆逐カットイン(主砲/魚雷/電探)";
         case 8:
         case 12:
             // API値変化(2021/05/08～)
-            return "駆逐カットイン(" + toShowItemTypeString(showitem, false) + ")";
+            return "駆逐カットイン(" + this.toShowItemTypeString(showitem, false) + ")";
         case 9:
         case 13:
             return "駆逐カットイン(魚雷/魚雷/見張員)";
@@ -648,6 +652,8 @@ public class BattleAtackDto {
             return "コロラド特殊攻撃";
         case 104:
             return "僚艦夜戦突撃";
+        case 105:
+            return "Richelieuよ！圧倒しなさいっ！";
         case 200:
             return "夜間瑞雲夜戦カットイン";
         case 201:
@@ -660,6 +666,8 @@ public class BattleAtackDto {
             return "大和、突撃します！二番艦も続いてください！";
         case 401:
             return "第一戦隊、突撃！主砲、全力斉射ッ！";
+        case 1000:
+            return "特四式内火艇攻撃";
         }
         return "不明(" + this.type + ")";
     }

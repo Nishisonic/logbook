@@ -143,10 +143,10 @@ public final class DropReportTable extends AbstractTableDialog {
                     List<ShipDto> ships = detail.getDock().getShips();
                     if (detail.isCombined()) {
                         List<ShipDto> shipsCombined = detail.getDockCombined().getShips();
-                        data = DeckBuilder.toDeckBuilderURL(Arrays.asList(ships, shipsCombined));
+                        data = DeckBuilder.toDeckBuilderURL(Arrays.asList(ships, shipsCombined), detail.getAirbases());
                     }
                     else {
-                        data = DeckBuilder.toDeckBuilderURL(Arrays.asList(ships));
+                        data = DeckBuilder.toDeckBuilderURL(Arrays.asList(ships), detail.getAirbases());
                     }
                     if (GlobalContext.getState() == 1) {
                         Clipboard clipboard = new Clipboard(Display.getDefault());
@@ -259,7 +259,7 @@ public final class DropReportTable extends AbstractTableDialog {
         // セパレータ
         new MenuItem(this.tablemenu, SWT.SEPARATOR);
         final MenuItem deckbuilder = new MenuItem(this.tablemenu, SWT.NONE);
-        deckbuilder.setText("編成をコピー(デッキビルダー URL)");
+        deckbuilder.setText("編成をコピー(デッキビルダーフォーマット 基地航空隊あり)");
         deckbuilder.addSelectionListener(deckbuilderListener);
         final MenuItem kcTools = new MenuItem(this.tablemenu, SWT.NONE);
         kcTools.setText("編成をコピー(制空権シミュレータ URL)");

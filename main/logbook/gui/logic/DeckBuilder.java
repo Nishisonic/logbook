@@ -32,10 +32,18 @@ public class DeckBuilder {
     private static final String KC_TOOLS_URL = "https://noro6.github.io/kc-web/";
     private static final String FLEET_HUB_URL = "https://jervis.vercel.app/";
 
-    public static String toDeckBuilderURL(List<List<ShipDto>> fleets) {
-        Optional<String> formatOpt = Optional.ofNullable(toDeckBuilderFormat(fleets));
+    /**
+     * 艦載機厨氏の艦隊シミュレーター＆デッキビルダーのフォーマットを作成します
+     * ただし、データが出揃っていない場合はnullが返されます
+     *
+     * @param needsUsedDock どの艦隊のデータを用いるか[第一艦隊,第二艦隊,第三艦隊,第四艦隊]
+     * @return url URL
+     */
+
+    public static String toDeckBuilderURL(List<List<ShipDto>> fleets, List<AirbaseDto> airbases) {
+        Optional<String> formatOpt = Optional.ofNullable(toDeckBuilderFormatV4_2(fleets, airbases));
         if (formatOpt.isPresent()) {
-            return DECKBUILDER_URL + "?predeck=" + formatOpt.get();
+            return formatOpt.get();
         }
         else {
             return null;
@@ -45,7 +53,17 @@ public class DeckBuilder {
     public static String toDeckBuilderURL(boolean[] needsUsedDock) {
         Optional<String> formatOpt = Optional.ofNullable(toDeckBuilderFormat(needsUsedDock));
         if (formatOpt.isPresent()) {
-            return DECKBUILDER_URL + "?predeck=" + formatOpt.get();
+            return formatOpt.get();
+        }
+        else {
+            return null;
+        }
+    }
+
+    public static String toDeckBuilderAAURL(boolean[] needsUsedDock, int areaId) {
+        Optional<String> formatOpt = Optional.ofNullable(toDeckBuilderFormatV4_2(needsUsedDock, areaId));
+        if (formatOpt.isPresent()) {
+            return formatOpt.get();
         }
         else {
             return null;

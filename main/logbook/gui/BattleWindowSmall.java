@@ -5,6 +5,15 @@ package logbook.gui;
 
 import java.util.List;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+
 import logbook.constants.AppConstants;
 import logbook.dto.BattleExDto;
 import logbook.dto.DockDto;
@@ -14,15 +23,6 @@ import logbook.dto.ShipDto;
 import logbook.gui.logic.ColorManager;
 import logbook.gui.logic.DamageRate;
 import logbook.gui.logic.LayoutLogic;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
 
 /**
  * @author Nekopanda
@@ -52,11 +52,11 @@ public class BattleWindowSmall extends BattleWindow {
             label.setText(text);
             return label;
         }
-
+    
         private static Label addLabel(Composite compo, String text, int align, int width) {
             return addLabel(compo, text, align, width, true, 1);
         }
-
+    
         private static Label addLabel(Composite compo, String text, int horizontalSpan) {
             return addLabel(compo, text, SWT.CENTER, SWT.DEFAULT, false, horizontalSpan);
         }
@@ -146,7 +146,16 @@ public class BattleWindowSmall extends BattleWindow {
             this.addVerticalSeparator(7);
             this.infoLabels[i][1] = this.addLabel("陣形:単縦");
             this.infoLabels[i][2] = this.addLabel("触接:あり");
-            this.infoLabels[i][3] = this.addLabelWithSpan("索敵:", 2, 1);
+
+            if (i == 0) {
+                this.infoLabels[i][3] = this.addLabel("索敵:発見!");
+                this.infoLabels[i][12] = this.addLabel("煙幕:なし");
+            }
+            else {
+                this.infoLabels[i][3] = this.addLabelWithSpan("索敵:", 2, 1);
+                this.infoLabels[i][12] = this.addLabel("");
+                LayoutLogic.hide(this.infoLabels[i][12], true);
+            }
 
             if (i == 0) {
                 this.infoLabels[i][4] = this.addLabel("航空戦");
@@ -155,6 +164,8 @@ public class BattleWindowSmall extends BattleWindow {
             }
             else {
                 this.matchLabel = this.addLabelWithSpan("会敵", 2, 1);
+                this.spCell = this.addLabel("");
+                LayoutLogic.hide(this.spCell, true);
                 this.infoLabels[i][6] = this.addLabel("Stage1");
                 this.infoLabels[i][4] = this.infoLabels[i][5] = this.infoLabels[i][6];
             }
@@ -255,7 +266,8 @@ public class BattleWindowSmall extends BattleWindow {
         setLabelColor(label, DamageRate.fromHP(nowhp, maxhp));
     }
 
-    private static void printFriendHp(Label[][] labels, int index, int nowhp, int maxhp, ShipDto ship, boolean escaped) {
+    private static void printFriendHp(Label[][] labels, int index, int nowhp, int maxhp, ShipDto ship,
+            boolean escaped) {
         labels[0][index].setToolTipText(ship.getDetailedString());
         if (escaped) {
             setLabelColor(labels[0][index], DamageRate.ESCAPED);
@@ -267,8 +279,7 @@ public class BattleWindowSmall extends BattleWindow {
     }
 
     private static void printHp(
-            Label[][] labels, int base1, int base2, int[] dam, int[] nowhp, int[] maxhp, boolean[] escaped)
-    {
+            Label[][] labels, int base1, int base2, int[] dam, int[] nowhp, int[] maxhp, boolean[] escaped) {
         for (int i = 0; i < nowhp.length; ++i) {
             if ((escaped != null) && escaped[i]) {
                 continue;
@@ -298,8 +309,7 @@ public class BattleWindowSmall extends BattleWindow {
 
     @Override
     protected String getReulstText(double[] damageRate, String rank) {
-        String rateString = (damageRate[0] == 0.0) ? "" :
-                String.format(" (x%.3f)", damageRate[1] / damageRate[0]);
+        String rateString = (damageRate[0] == 0.0) ? "" : String.format(" (x%.3f)", damageRate[1] / damageRate[0]);
         return String.format("結果: %s 損害率 %.1f%%vs%.1f%%%s ",
                 rank, damageRate[0] * 100, damageRate[1] * 100, rateString);
     }

@@ -75,11 +75,18 @@ public final class AsyncExecApplicationMain extends Thread {
                             LOG.get().warn("タイマー更新でエラー", e);
                         }
 
-                        try {
+                        if(AppConfig.get().isUsePortButton()){
+                            try {
                             // 保有アイテム数を更新する
                             new UpdateItemCountTask(main).run();
                             // 保有艦娘数を更新する
                             new UpdateShipCountTask(main).run();
+                            } catch (Exception e) {
+                                LOG.get().warn("GUI更新で不明なエラー", e);
+                            }
+                        }
+
+                        try {
                             // 艦隊タブを更新する
                             new UpdateFleetTabTask(main).run();
                             // 遠征と入渠を更新する
@@ -154,7 +161,7 @@ public final class AsyncExecApplicationMain extends Thread {
             }
         }
     }
-
+    
     /**
      * 保有艦娘数を更新する
      */

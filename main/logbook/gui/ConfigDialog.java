@@ -238,7 +238,7 @@ public final class ConfigDialog extends Dialog {
         proxyPortSpinner.setSelection(AppConfig.get().getProxyPort());
         proxyPortSpinner.setLayoutData(SwtUtils.initSpinner(55,
                 new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1)));
-                
+
         final Button sendTsunDBButton = new Button(compositeConnection, SWT.CHECK);
         sendTsunDBButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
         sendTsunDBButton.setText("TsunDBへデータを送信する");
@@ -249,7 +249,7 @@ public final class ConfigDialog extends Dialog {
         tsunDBLogButton.setText("TsunDBへの送信をログ出力する");
         tsunDBLogButton.setSelection(AppConfig.get().isTsunDBSendLog());
 
-        // システム タブ
+        // 一般タブ
         compositeSystem.setLayout(new GridLayout(3, false));
 
         final Button hidewindow = new Button(compositeSystem, SWT.CHECK);
@@ -297,6 +297,21 @@ public final class ConfigDialog extends Dialog {
         alphabetize.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
         alphabetize.setText("マスの指定にアルファベットを使用(Thanks for KC3改)");
         alphabetize.setSelection(AppConfig.get().isUseAlphabetizeMap());
+
+        final Button usePortButton = new Button(compositeSystem, SWT.CHECK);
+        usePortButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 3, 1));
+        usePortButton.setText("母港タブの装備一覧/艦娘一覧ボタンを表示*");
+        usePortButton.setSelection(AppConfig.get().isUsePortButton());
+
+        Label itemFilterMethodLabel = new Label(compositeSystem, SWT.NONE);
+        itemFilterMethodLabel.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false, 1, 1));
+        itemFilterMethodLabel.setText("装備フィルターの識別種*");
+
+        final Combo itemFilterMethodCombo = new Combo(compositeSystem, SWT.READ_ONLY);
+        itemFilterMethodCombo.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 2, 1));
+        itemFilterMethodCombo.add("アイコン");
+        itemFilterMethodCombo.add("カテゴリ");
+        itemFilterMethodCombo.select(AppConfig.get().getItemFilterMethod());
 
         final Combo systemWideShortcutKey;
         if (JIntellitypeWrapper.getInstance() != null) {
@@ -1161,6 +1176,8 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setNameOnTitlebar(nameOnTitlebar.getSelection());
                 AppConfig.get().setColorSupport(colorSupport.getSelection());
                 AppConfig.get().setUseAlphabetizeMap(alphabetize.getSelection());
+                AppConfig.get().setUsePortButton(usePortButton.getSelection());
+                AppConfig.get().setItemFilterMethod(itemFilterMethodCombo.getSelectionIndex());
                 if (StringUtils.isNumeric(soundlevel.getText())) {
                     float level = (float) Integer.parseInt(soundlevel.getText()) / 100;
                     AppConfig.get().setSoundLevel(level);

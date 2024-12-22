@@ -330,9 +330,11 @@ public final class CreateReportLogic {
      * @return 内容
      */
     @SuppressWarnings("rawtypes")
-    public static List<Comparable[]> getItemListBody(int EquipType) {
+    public static List<Comparable[]> getItemListBody(String EquipType) {
         // ItemInfoを作成してスクリプトに渡す
         Map<Integer, ItemInfo> itemCountMap = new HashMap<Integer, ItemInfo>();
+        int method = AppConfig.get().getItemFilterMethod();
+        String itemtype = "全て";
 
         for (ItemDto item : GlobalContext.getItemMap().values()) {
             ItemInfo info = itemCountMap.get(item.getSlotitemId());
@@ -366,8 +368,15 @@ public final class CreateReportLogic {
         ItemInfoListener script = ItemInfoProxy.get();
         script.begin();
         for (ItemInfo itemInfo : countitems) {
-            int itemtype = itemInfo.getInfo().getType3(); //種別フィルタ処理
-            if ((EquipType > 0) && (EquipType != itemtype)) {
+            switch (method) {
+            case 0:
+                itemtype = itemInfo.getInfo().getTypeName(); //種別フィルタ処理
+                break;
+            case 1:
+                itemtype = itemInfo.getInfo().getTypeName2(); //種別フィルタ処理
+                break;
+            }
+            if ((EquipType.equals("全て") == false) && (EquipType.equals(itemtype) == false)) {
                 continue;
             }
             body.add(ArrayUtils.addAll(new Comparable[] {

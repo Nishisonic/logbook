@@ -1,14 +1,5 @@
 package logbook.gui;
 
-import logbook.constants.AppConstants;
-import logbook.data.Data;
-import logbook.data.DataType;
-import logbook.gui.logic.CreateReportLogic;
-import logbook.gui.logic.TableItemCreator;
-import logbook.internal.ItemType;
-import logbook.scripting.TableItemCreatorProxy;
-import logbook.util.SwtUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,13 +18,24 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.TableItem;
 
+import logbook.config.AppConfig;
+import logbook.constants.AppConstants;
+import logbook.data.Data;
+import logbook.data.DataType;
+import logbook.gui.logic.CreateReportLogic;
+import logbook.gui.logic.TableItemCreator;
+import logbook.internal.ItemCategoryType;
+import logbook.internal.ItemIconType;
+import logbook.scripting.TableItemCreatorProxy;
+import logbook.util.SwtUtils;
+
 /**
  * 所有装備一覧
  *
  */
 public final class ItemTable extends AbstractTableDialog {
     private Combo itemtext;
-    private int SelectedEquipType = 0;
+    private String SelectedEquipType = "全て";
 
     /**
      * @param parent
@@ -52,13 +54,23 @@ public final class ItemTable extends AbstractTableDialog {
         shellLayout.horizontalSpacing = 1;
         this.shell.setLayout(shellLayout);
         this.itemtext = new Combo(this.shell, SWT.DROP_DOWN | SWT.READ_ONLY);
-        List<String> itemTypeNames = new ArrayList<>(ItemType.getAll().values());
-        itemTypeNames.add(0, "全て");
-        this.itemtext.setItems(itemTypeNames.toArray(new String[0]));
+        int method = AppConfig.get().getItemFilterMethod();
+        switch (method) {
+        case 0:
+            List<String> itemIconTypeNames = new ArrayList<>(ItemIconType.getAll().values());
+            itemIconTypeNames.add(0, "全て");
+            this.itemtext.setItems(itemIconTypeNames.toArray(new String[0]));
+            break;
+        case 1:
+            List<String> itemCategoryTypeNames = new ArrayList<>(ItemCategoryType.getAll().values());
+            itemCategoryTypeNames.add(0, "全て");
+            this.itemtext.setItems(itemCategoryTypeNames.toArray(new String[0]));
+            break;
+        }
         this.itemtext.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                ItemTable.this.SelectedEquipType = ItemTable.this.itemtext.getSelectionIndex();
+                ItemTable.this.SelectedEquipType = ItemTable.this.itemtext.getText();
                 ItemTable.this.updateTableBody();
                 ItemTable.this.reloadTable();
             }

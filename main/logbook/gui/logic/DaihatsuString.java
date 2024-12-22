@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package logbook.gui.logic;
 
@@ -92,6 +92,16 @@ public class DaihatsuString {
                     }
                     else if (item.getName().equals("特二式内火艇")) {
                         this.daihatsuUpBase += 1.0;
+                        ++this.numDaihatsuType;
+                        this.totalDaihatsuLevel += item.getLevel();
+                    }
+                    else if (item.getName().equals("特四式内火艇")) {
+                        this.daihatsuUpBase += 4.0;
+                        ++this.numDaihatsuType;
+                        this.totalDaihatsuLevel += item.getLevel();
+                    }
+                    else if (item.getName().equals("特四式内火艇改")) {
+                        this.daihatsuUpBase += 5.0;
                         ++this.numDaihatsuType;
                         this.totalDaihatsuLevel += item.getLevel();
                     }

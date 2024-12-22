@@ -5,18 +5,19 @@ package logbook.gui;
 
 import java.util.List;
 
-import logbook.dto.BattleExDto;
-import logbook.dto.DockDto;
-import logbook.dto.EnemyShipDto;
-import logbook.dto.ShipDto;
-import logbook.gui.logic.DamageRate;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
+
+import logbook.dto.BattleExDto;
+import logbook.dto.DockDto;
+import logbook.dto.EnemyShipDto;
+import logbook.dto.ShipDto;
+import logbook.gui.logic.DamageRate;
+import logbook.gui.logic.LayoutLogic;
 
 /**
  * @author Nekopanda
@@ -46,7 +47,9 @@ public class BattleWindowLarge extends BattleWindow {
             labels[2] = this.addLabel("触接:あり");
             break;
         case 2:
-            labels[3] = this.addLabelWithSpan("索敵", 2, 1);
+            //labels[3] = this.addLabelWithSpan("索敵", 2, 1);
+            labels[3] = this.addLabel("索敵:発見!");
+            labels[12] = this.addLabel("煙幕:3重");
             break;
         case 3:
             labels[4] = this.addLabel("航空戦:");
@@ -81,7 +84,10 @@ public class BattleWindowLarge extends BattleWindow {
             labels[2] = this.addLabel("触接:あり");
             break;
         case 2:
-            labels[3] = this.addLabelWithSpan("索敵:", 2, 1);
+            labels[3] = this.addLabelWithSpan("索敵", 2, 1);
+            //labels[3] = this.addLabel("索敵:発見!");
+            labels[12] = this.addLabel("");
+            LayoutLogic.hide(labels[12], true);
             break;
         case 3:
             labels[4] = labels[5] = labels[6] = this.addLabel("Stage1");
@@ -198,7 +204,8 @@ public class BattleWindowLarge extends BattleWindow {
         this.skipSlot();//1
         this.skipSlot();//2
         this.matchLabel = this.addLabelWithSpan("会敵", 2, 1);//3-4
-        this.addLabelWithSpan("", 2, 1);//5-6
+        //this.addLabelWithSpan("", 2, 1);//5-6
+        this.spCell = this.addLabelWithSpan("", 2, 1); //5-6
         this.addLabelWithSpan("開始時", 2, 1);//7-8
         this.addLabelWithSpan("→", 3, 1);//8
         this.hpLabels[0] = this.addLabelWithSpan(AFTER_DAY, 3, 1);//9-11
@@ -224,8 +231,7 @@ public class BattleWindowLarge extends BattleWindow {
             if ((i == 0) || (i == 6))
                 this.addVerticalSeparator(6);//5
             this.enemyLabels[i] = this.addLabel("艦名" + (i + 1), SWT.LEFT, nameWidth); //6
-            this.enemyHpLabels[1][i] = this.enemyHpLabels[0][i] =
-                    this.addLabelWithSpan("0000", 2, 1); //10 HP
+            this.enemyHpLabels[1][i] = this.enemyHpLabels[0][i] = this.addLabelWithSpan("0000", 2, 1); //10 HP
             this.createHpLabels(this.enemyHpLabels, i); // 10-17
         }
 
@@ -316,7 +322,8 @@ public class BattleWindowLarge extends BattleWindow {
         setDamageLabel(label, DamageRate.fromHP(nowhp, maxhp), friend);
     }
 
-    private static void printFriendHp(Label[][] labels, int index, int nowhp, int maxhp, boolean friend, boolean escaped) {
+    private static void printFriendHp(Label[][] labels, int index, int nowhp, int maxhp, boolean friend,
+            boolean escaped) {
         if (escaped) {
             setDamageLabel(labels[1][index], DamageRate.ESCAPED, friend);
         }
@@ -328,8 +335,7 @@ public class BattleWindowLarge extends BattleWindow {
 
     private static void printHp(
             Label[][] labels, int base1, int base2, int[] dam, int[] nowhp, int[] maxhp, boolean[] escaped,
-            boolean friend)
-    {
+            boolean friend) {
         for (int i = 0; i < nowhp.length; ++i) {
             if ((escaped != null) && escaped[i]) {
                 continue;

@@ -7,6 +7,11 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.MenuItem;
+import org.eclipse.swt.widgets.Shell;
+
 import logbook.constants.AppConstants;
 import logbook.dto.AirBattleDto;
 import logbook.dto.BattleAtackDto;
@@ -17,11 +22,6 @@ import logbook.dto.ResultRank;
 import logbook.dto.ShipDto;
 import logbook.gui.logic.ColorManager;
 import logbook.internal.LoggerHolder;
-
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.MenuItem;
-import org.eclipse.swt.widgets.Shell;
 
 /**
  * @author Nekopanda
@@ -36,9 +36,10 @@ public class BattleWindow extends BattleWindowBase {
     // 名前
     protected final Label[] enemyLabels = new Label[12];
 
-    protected final Label[][] infoLabels = new Label[2][12];
+    protected final Label[][] infoLabels = new Label[2][13];
 
     protected Label matchLabel;
+    protected Label spCell;
     protected final Label resultLabel[] = new Label[3];
 
     // ダメージ計算に使われる
@@ -51,6 +52,7 @@ public class BattleWindow extends BattleWindowBase {
     protected static String FORM_PREFIX = "陣形:";
     protected static String TOUCH_PREFIX = "触接:";
     protected static String SAKUTEKI_PREFIX = "索敵:";
+    protected static String ENMAKU_PREFIX = "煙幕:";
 
     /**
      * Create the dialog.
@@ -63,7 +65,7 @@ public class BattleWindow extends BattleWindowBase {
     @Override
     protected void clearText() {
         // 情報
-        for (int i = 0; i < 12; ++i) {
+        for (int i = 0; i < 13; ++i) {
             setLabelText(this.infoLabels[0][i], "");
             setLabelText(this.infoLabels[1][i], "");
         }
@@ -75,6 +77,7 @@ public class BattleWindow extends BattleWindowBase {
 
         // その他
         this.matchLabel.setText("");
+        this.spCell.setText("");
         for (int i = 0; i < 3; ++i) {
             this.resultLabel[i].setText("");
             this.resultLabel[i].setBackground(null);
@@ -259,8 +262,7 @@ public class BattleWindow extends BattleWindowBase {
     }
 
     protected String getReulstText(double[] damageRate, String rank) {
-        String rateString = (damageRate[0] == 0.0) ? "" :
-                String.format(" (x%.3f)", damageRate[1] / damageRate[0]);
+        String rateString = (damageRate[0] == 0.0) ? "" : String.format(" (x%.3f)", damageRate[1] / damageRate[0]);
         return String.format("損害率 自: %.1f%% vs. 敵: %.1f%%%s 結果: %s",
                 damageRate[0] * 100, damageRate[1] * 100, rateString, rank);
     }
@@ -302,6 +304,10 @@ public class BattleWindow extends BattleWindowBase {
         String seiku = lastPhase.getSeiku();
         AirBattleDto[] air = lastPhase.getAirBattleDto();
         double[] damageRate = lastPhase.getDamageRate();
+        int[] smoke = new int[2];
+        smoke[0] = battle.getSmokeType();
+        smoke[1] = 0;
+        String spmasu = "";
 
         if (rawTouchPlane != null) {
             touchPlane = AirBattleDto.toTouchPlaneString(rawTouchPlane);
@@ -309,7 +315,7 @@ public class BattleWindow extends BattleWindowBase {
 
         for (int i = 0; i < 2; ++i) {
             if (formation[i] != null) {
-                setLabelText(this.infoLabels[i][1], FORM_PREFIX + formation[i]);
+                setLabelText(this.infoLabels[i][1], FORM_PREFIX + formation[i] + " ");
             }
             if (touchPlane != null)
                 setLabelText(this.infoLabels[i][2],
@@ -318,6 +324,11 @@ public class BattleWindow extends BattleWindowBase {
             if (sakuteki != null) {
                 setLabelText(this.infoLabels[i][3], SAKUTEKI_PREFIX + sakuteki[i]);
             }
+            if (smoke[i] != 0) {
+                setLabelText(this.infoLabels[i][12], ENMAKU_PREFIX + smoke[i] + "重");
+            }
+            else
+                setLabelText(this.infoLabels[i][12], ENMAKU_PREFIX + "なし");
             if (i == 0) {
                 this.infoLabels[i][4].setText("航空戦:");
                 this.infoLabels[i][5].setText((seiku != null) ? seiku : "なし");
@@ -331,6 +342,24 @@ public class BattleWindow extends BattleWindowBase {
         }
 
         this.matchLabel.setText(battle.getFormationMatch());
+
+        if (battle.isBalloonCell() != false) {
+            if (battle.isAtollCell() != false) {
+                spmasu = "気球・環礁マス";
+            }
+            else {
+                spmasu = "気球マス";
+            }
+        }
+        else {
+            if (battle.isAtollCell() != false) {
+                spmasu = "環礁マス";
+            }
+            else {
+                spmasu = "";
+            }
+        }
+        this.spCell.setText(spmasu);
 
         ResultRank rank = lastPhase.getEstimatedRank();
         this.resultLabel[0].setText(this.getMVPText(mvp1, airDamage));

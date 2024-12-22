@@ -1,12 +1,16 @@
 package logbook.gui.logic;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
+
 import logbook.dto.ItemDto;
 import logbook.dto.ShipBaseDto;
 import logbook.dto.ShipDto;
 import logbook.dto.ShipParameters;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 対空関連を扱うクラス。
@@ -26,52 +30,55 @@ public class CalcAA {
      */
     private final Map<Integer, AA_CI> AA_CI_BONUS = new LinkedHashMap<Integer, AA_CI>() {
         {
-            this.put(1, new AA_CI(7, 1.7));    // 高角砲x2/電探(秋月型)
-            this.put(2, new AA_CI(6, 1.7));    // 高角砲/電探(秋月型)
-            this.put(3, new AA_CI(4, 1.6));    // 高角砲x2(秋月型)
-            this.put(4, new AA_CI(6, 1.5));    // 大口径主砲/三式弾/高射装置/対空電探
-            this.put(5, new AA_CI(4, 1.5));    // 高角砲+高射装置x2/対空電探
-            this.put(6, new AA_CI(4, 1.45));   // 大口径主砲/三式弾/高射装置
-            this.put(7, new AA_CI(3, 1.35));   // 高角砲/高射装置/対空電探
-            this.put(8, new AA_CI(4, 1.4));    // 高角砲+高射装置/対空電探
-            this.put(9, new AA_CI(2, 1.3));    // 高角砲/高射装置
-            this.put(10, new AA_CI(8, 1.65));  // 高角砲/特殊機銃/対空電探(摩耶改二)
-            this.put(11, new AA_CI(6, 1.5));   // 高角砲/特殊機銃(摩耶改二)
-            this.put(12, new AA_CI(3, 1.25));  // 特殊機銃/機銃(非特殊機銃)/電探
-            this.put(13, new AA_CI(4, 1.35));  // 高角砲/特殊機銃/対空電探(摩耶改二不可)
-            this.put(14, new AA_CI(4, 1.45));  // 高角砲/機銃/対空電探(五十鈴改二)
-            this.put(15, new AA_CI(3, 1.3));   // 高角砲/機銃(五十鈴改二)
-            this.put(16, new AA_CI(4, 1.4));   // 高角砲/機銃/対空電探(霞改二乙)
-            this.put(17, new AA_CI(2, 1.25));  // 高角砲/機銃(霞改二乙)
-            this.put(18, new AA_CI(2, 1.2));   // 特殊機銃(皐月改二)
-            this.put(19, new AA_CI(5, 1.45));  // 高角砲(非高射装置)/特殊機銃(鬼怒改二)
-            this.put(20, new AA_CI(3, 1.25));  // 特殊機銃(鬼怒改二)
-            this.put(21, new AA_CI(5, 1.45));  // 高角砲/対空電探(由良改二)
-            this.put(22, new AA_CI(2, 1.2));   // 特殊機銃(文月改二)
-            this.put(23, new AA_CI(1, 1.05));  // 機銃(非特殊機銃)(UIT-25/伊504)
-            this.put(24, new AA_CI(3, 1.25));  // 高角砲/機銃(非特殊機銃)(天龍型改二)
-            this.put(25, new AA_CI(7, 1.55));  // 新噴進砲/対空電探/三式弾(伊勢型改)
-            this.put(26, new AA_CI(6, 1.4));   // 10cm連装高角砲改＋増設機銃/対空電探(大和型改二)
-            this.put(27, new AA_CI(5, 1.55));  // 高角砲+増設機銃/噴進砲改二/対空電探(大淀改)
-            this.put(28, new AA_CI(4, 1.4));   // 新噴進砲/対空電探(伊勢型改/武蔵改)
-            this.put(29, new AA_CI(5, 1.55));  // 高角砲/対空電探(浜風乙改/磯風乙改)
-            this.put(30, new AA_CI(3, 1.3));   // 高角砲x3(天龍改二/Gotland改)
-            this.put(31, new AA_CI(2, 1.25));  // 高角砲x2(天龍改二)
-            this.put(32, new AA_CI(3, 1.2));   // [16inch Mk.I三連装砲改+FCR type284 or 20連装7inch UP Rocket Launchers/QF 2ポンド8連装ポンポン砲] or [20連装7inch UP Rocket Launchersx2](英国艦/金剛型改二)
-            this.put(33, new AA_CI(3, 1.35));  // 高角砲/機銃(対空4以上)(Gotland改)
-            this.put(34, new AA_CI(7, 1.6));   // 5inch単装砲 Mk.30改+GFCS Mk.37x2(Johnston)
-            this.put(35, new AA_CI(6, 1.55));  // 5inch単装砲 Mk.30改+GFCS Mk.37/5inch単装砲 Mk.30改(Johnston)
-            this.put(36, new AA_CI(6, 1.55));  // 5inch単装砲 Mk.30改x2/GFCS Mk.37(Johnston)
-            this.put(37, new AA_CI(4, 1.45));  // 5inch単装砲 Mk.30改x2(Johnston)
+            this.put(1, new AA_CI(7, 1.7)); // 高角砲x2/電探(秋月型)
+            this.put(2, new AA_CI(6, 1.7)); // 高角砲/電探(秋月型)
+            this.put(3, new AA_CI(4, 1.6)); // 高角砲x2(秋月型)
+            this.put(4, new AA_CI(6, 1.5)); // 大口径主砲/三式弾/高射装置/対空電探
+            this.put(5, new AA_CI(4, 1.5)); // 高角砲+高射装置x2/対空電探
+            this.put(6, new AA_CI(4, 1.45)); // 大口径主砲/三式弾/高射装置
+            this.put(7, new AA_CI(3, 1.35)); // 高角砲/高射装置/対空電探
+            this.put(8, new AA_CI(4, 1.4)); // 高角砲+高射装置/対空電探
+            this.put(9, new AA_CI(2, 1.3)); // 高角砲/高射装置
+            this.put(10, new AA_CI(8, 1.65)); // 高角砲/特殊機銃/対空電探(摩耶改二)
+            this.put(11, new AA_CI(6, 1.5)); // 高角砲/特殊機銃(摩耶改二)
+            this.put(12, new AA_CI(3, 1.25)); // 特殊機銃/機銃(非特殊機銃)/電探
+            this.put(13, new AA_CI(4, 1.35)); // 高角砲/特殊機銃/対空電探(摩耶改二不可)
+            this.put(14, new AA_CI(4, 1.45)); // 高角砲/機銃/対空電探(五十鈴改二)
+            this.put(15, new AA_CI(3, 1.3)); // 高角砲/機銃(五十鈴改二)
+            this.put(16, new AA_CI(4, 1.4)); // 高角砲/機銃/対空電探(霞改二乙)
+            this.put(17, new AA_CI(2, 1.25)); // 高角砲/機銃(霞改二乙)
+            this.put(18, new AA_CI(2, 1.2)); // 特殊機銃(皐月改二)
+            this.put(19, new AA_CI(5, 1.45)); // 高角砲(非高射装置)/特殊機銃(鬼怒改二)
+            this.put(20, new AA_CI(3, 1.25)); // 特殊機銃(鬼怒改二)
+            this.put(21, new AA_CI(5, 1.45)); // 高角砲/対空電探(由良改二)
+            this.put(22, new AA_CI(2, 1.2)); // 特殊機銃(文月改二)
+            this.put(23, new AA_CI(1, 1.05)); // 機銃(非特殊機銃)(UIT-25/伊504)
+            this.put(24, new AA_CI(3, 1.25)); // 高角砲/機銃(非特殊機銃)(天龍型改二)
+            this.put(25, new AA_CI(7, 1.55)); // 新噴進砲/対空電探/三式弾(伊勢型改)
+            this.put(26, new AA_CI(6, 1.4)); // 10cm連装高角砲改＋増設機銃/対空電探(大和型改二)
+            this.put(27, new AA_CI(5, 1.55)); // 高角砲+増設機銃/噴進砲改二/対空電探(大淀改)
+            this.put(28, new AA_CI(4, 1.4)); // 新噴進砲/対空電探(伊勢型改/武蔵改)
+            this.put(29, new AA_CI(5, 1.55)); // 高角砲/対空電探(浜風乙改/磯風乙改)
+            this.put(30, new AA_CI(3, 1.3)); // 高角砲x3(天龍改二/Gotland改)
+            this.put(31, new AA_CI(2, 1.25)); // 高角砲x2(天龍改二)
+            this.put(32, new AA_CI(3, 1.2)); // [16inch Mk.I三連装砲改+FCR type284 or 20連装7inch UP Rocket Launchers/QF 2ポンド8連装ポンポン砲] or [20連装7inch UP Rocket Launchersx2](英国艦/金剛型改二)
+            this.put(33, new AA_CI(3, 1.35)); // 高角砲/機銃(対空4以上)(Gotland改)
+            this.put(34, new AA_CI(7, 1.6)); // 5inch単装砲 Mk.30改+GFCS Mk.37x2(Johnston)
+            this.put(35, new AA_CI(6, 1.55)); // 5inch単装砲 Mk.30改+GFCS Mk.37/5inch単装砲 Mk.30改(Johnston)
+            this.put(36, new AA_CI(6, 1.55)); // 5inch単装砲 Mk.30改x2/GFCS Mk.37(Johnston)
+            this.put(37, new AA_CI(4, 1.45)); // 5inch単装砲 Mk.30改x2(Johnston)
             this.put(38, new AA_CI(10, 1.85)); // GFCS Mk.37+5inch連装両用砲(集中配備)x2(Atlanta)
-            this.put(39, new AA_CI(10, 1.7));  // GFCS Mk.37+5inch連装両用砲(集中配備)/5inch連装両用砲(集中配備)(Atlanta)
-            this.put(40, new AA_CI(10, 1.7));  // 5inch連装両用砲(集中配備)x2/GFCS Mk.37(Atlanta)
-            this.put(41, new AA_CI(9, 1.65));  // 5inch連装両用砲(集中配備)x2(Atlanta)
+            this.put(39, new AA_CI(10, 1.7)); // GFCS Mk.37+5inch連装両用砲(集中配備)/5inch連装両用砲(集中配備)(Atlanta)
+            this.put(40, new AA_CI(10, 1.7)); // 5inch連装両用砲(集中配備)x2/GFCS Mk.37(Atlanta)
+            this.put(41, new AA_CI(9, 1.65)); // 5inch連装両用砲(集中配備)x2(Atlanta)
             this.put(42, new AA_CI(10, 1.65)); // 10cm連装高角砲群 集中配備x2/機銃(対空6以上)/大和型電探(大和型改二)
-            this.put(43, new AA_CI(8, 1.6));   // 10cm連装高角砲群 集中配備x2/大和型電探(大和型改二)
-            this.put(44, new AA_CI(6, 1.6));   // 10cm連装高角砲群 集中配備/機銃(対空6以上)/大和型電探(大和型改二)
-            this.put(45, new AA_CI(5, 1.55));  // 10cm連装高角砲群 集中配備/大和型電探(大和型改二)
-            this.put(46, new AA_CI(8, 1.55));  // 35.6cm連装砲改四/改三(ダズル迷彩仕様)/特殊機銃/対空電探(榛名改二乙)
+            this.put(43, new AA_CI(8, 1.6)); // 10cm連装高角砲群 集中配備x2/大和型電探(大和型改二)
+            this.put(44, new AA_CI(6, 1.6)); // 10cm連装高角砲群 集中配備/機銃(対空6以上)/大和型電探(大和型改二)
+            this.put(45, new AA_CI(5, 1.55)); // 10cm連装高角砲群 集中配備/大和型電探(大和型改二)
+            this.put(46, new AA_CI(8, 1.55)); // 35.6cm連装砲改四/改三(ダズル迷彩仕様)/特殊機銃/対空電探(榛名改二乙)
+            this.put(47, new AA_CI(2, 1.3)); // 12.7cm連装砲C型改三H/25mm対空機銃増備/対空電探(白露型改二・対空70以上)
+            this.put(48, new AA_CI(8, 1.75)); // 10cm連装高角砲改+高射装置改x2/対空電探(秋月型改・改二)
+            this.put(49, new AA_CI(5, 1.5)); // 特殊高角砲/対空電探(藤波改二)
         }
     };
 
@@ -83,8 +90,8 @@ public class CalcAA {
      * @return 最低保証数
      */
     public int getMinShotDown(boolean isFriend, int ciKind) {
-        if (ciKind > 0 && ciKind <= AA_CI_BONUS.size()) {
-            return AA_CI_BONUS.get(ciKind).getFixedBonus() + 1;
+        if ((ciKind > 0) && (ciKind <= this.AA_CI_BONUS.size())) {
+            return this.AA_CI_BONUS.get(ciKind).getFixedBonus() + 1;
         }
         return isFriend ? 1 : 0;
     }
@@ -98,8 +105,10 @@ public class CalcAA {
      * @param isSecond   第二艦隊か(連合艦隊時使用)
      * @return 加重対空値
      */
-    public <SHIP extends ShipBaseDto> double getPropShotDown(SHIP ship, boolean isFriend, boolean isCombined, boolean isSecond, boolean isRaidBattle) {
-        return 0.02 * AIR_BATTLE_FACTOR * this.getWeightedAirValue(ship, isFriend) * this.getCombinedBonus(isFriend, isCombined, isSecond, isRaidBattle);
+    public <SHIP extends ShipBaseDto> double getPropShotDown(SHIP ship, boolean isFriend, boolean isCombined,
+            boolean isSecond, boolean isRaidBattle) {
+        return 0.02 * AIR_BATTLE_FACTOR * this.getWeightedAirValue(ship, isFriend)
+                * this.getCombinedBonus(isFriend, isCombined, isSecond, isRaidBattle);
     }
 
     /**
@@ -115,9 +124,11 @@ public class CalcAA {
      * @param isRaidBattle  長距離空襲戦か
      * @return 固定撃墜
      */
-    public <SHIP extends ShipBaseDto> int getFixedShotDown(SHIP ship, List<SHIP> ships, boolean isFriend, boolean isCombined, boolean isSecond, int formationKind, int ciKind, boolean isRaidBattle) {
+    public <SHIP extends ShipBaseDto> int getFixedShotDown(SHIP ship, List<SHIP> ships, boolean isFriend,
+            boolean isCombined, boolean isSecond, int formationKind, int ciKind, boolean isRaidBattle) {
         return (int) (this.getFinalWeightedAirValue(ship, ships, isFriend, formationKind)
-                * (ciKind > 0 && ciKind <= AA_CI_BONUS.size() ? AA_CI_BONUS.get(ciKind).getVariableBonus() : 1)
+                * ((ciKind > 0) && (ciKind <= this.AA_CI_BONUS.size()) ? this.AA_CI_BONUS.get(ciKind).getVariableBonus()
+                        : 1)
                 * this.getCombinedBonus(isFriend, isCombined, isSecond, isRaidBattle));
     }
 
@@ -130,7 +141,8 @@ public class CalcAA {
      * @param formationKind 陣形
      * @return 最終加重対空値
      */
-    public <SHIP extends ShipBaseDto> double getFinalWeightedAirValue(SHIP ship, List<SHIP> ships, boolean isFriend, int formationKind) {
+    public <SHIP extends ShipBaseDto> double getFinalWeightedAirValue(SHIP ship, List<SHIP> ships, boolean isFriend,
+            int formationKind) {
         double weighted = this.getWeightedAirValue(ship, isFriend);
         int fleet = this.getFleetAirDefenseValue(ships, isFriend, formationKind);
         return (weighted + fleet) * AIR_BATTLE_FACTOR * (isFriend ? 0.8 : 0.75);
@@ -165,7 +177,8 @@ public class CalcAA {
     public <SHIP extends ShipBaseDto> double getWeightedAirValue(SHIP ship, boolean isFriend) {
         List<ItemDto> items = this.getShipAllItems(ship, isFriend);
         int shipAA = ship.getTaiku() - items.stream().map(ItemDto::getParam).mapToInt(ShipParameters::getTaiku).sum();
-        return (isFriend ? (shipAA / 2.0) : Math.floor(Math.sqrt(ship.getTaiku()))) + this.getItemsWeightedAirBonus(items);
+        return (isFriend ? (shipAA / 2.0) : Math.floor(Math.sqrt(ship.getTaiku())))
+                + this.getItemsWeightedAirBonus(items);
     }
 
     /**
@@ -176,13 +189,14 @@ public class CalcAA {
      * @param formationKind 陣形
      * @return 艦隊防空値
      */
-    public <SHIP extends ShipBaseDto> int getFleetAirDefenseValue(List<SHIP> ships, boolean isFriend, int formationKind) {
+    public <SHIP extends ShipBaseDto> int getFleetAirDefenseValue(List<SHIP> ships, boolean isFriend,
+            int formationKind) {
         int fleetBonus = ships.stream()
                 .filter(Objects::nonNull)
                 .map(ship -> this.getShipAllItems(ship, isFriend))
                 .mapToInt(items -> (int) this.getItemsFleetAirDefenseBonus(items))
                 .sum();
-        return (int) (this.getFormationBonus(formationKind) * fleetBonus / (isFriend ? 1.3 : 1.0));
+        return (int) ((this.getFormationBonus(formationKind) * fleetBonus) / (isFriend ? 1.3 : 1.0));
     }
 
     /**
@@ -211,7 +225,8 @@ public class CalcAA {
     private double getItemsWeightedAirBonus(List<ItemDto> items) {
         // 丸め誤差対策
         return items.stream()
-                .mapToDouble(item -> item.getParam().getTaiku() * this.getItemAirBonus(item) * 100 + this.getItemImprovementAirBonus(item) * Math.sqrt(item.getLevel()) * 100)
+                .mapToDouble(item -> (item.getParam().getTaiku() * this.getItemAirBonus(item) * 100)
+                        + (this.getItemImprovementAirBonus(item) * Math.sqrt(item.getLevel()) * 100))
                 .sum() / 100;
     }
 
@@ -224,7 +239,8 @@ public class CalcAA {
     private double getItemsFleetAirDefenseBonus(List<ItemDto> items) {
         // 丸め誤差対策
         return items.stream()
-                .mapToDouble(item -> item.getParam().getTaiku() * this.getItemFleetAirBonus(item) * 100 + this.getItemImprovementFleetAirBonus(item) * Math.sqrt(item.getLevel()) * 100)
+                .mapToDouble(item -> (item.getParam().getTaiku() * this.getItemFleetAirBonus(item) * 100)
+                        + (this.getItemImprovementFleetAirBonus(item) * Math.sqrt(item.getLevel()) * 100))
                 .sum() / 100;
     }
 
@@ -236,26 +252,26 @@ public class CalcAA {
      */
     private double getFormationBonus(int formationKind) {
         switch (formationKind) {
-            case 1:
-                return 1.0; // 単縦陣
-            case 2:
-                return 1.2; // 複縦陣
-            case 3:
-                return 1.6; // 輪形陣
-            case 4:
-                return 1.0; // 梯形陣
-            case 5:
-                return 1.0; // 単横陣
-            case 6:
-                return 1.1; // 警戒陣
-            case 11:
-                return 1.1; // 第一警戒航行序列
-            case 12:
-                return 1.0; // 第二警戒航行序列
-            case 13:
-                return 1.5; // 第三警戒航行序列
-            case 14:
-                return 1.0; // 第四警戒航行序列
+        case 1:
+            return 1.0; // 単縦陣
+        case 2:
+            return 1.2; // 複縦陣
+        case 3:
+            return 1.6; // 輪形陣
+        case 4:
+            return 1.0; // 梯形陣
+        case 5:
+            return 1.0; // 単横陣
+        case 6:
+            return 1.1; // 警戒陣
+        case 11:
+            return 1.1; // 第一警戒航行序列
+        case 12:
+            return 1.0; // 第二警戒航行序列
+        case 13:
+            return 1.5; // 第三警戒航行序列
+        case 14:
+            return 1.0; // 第四警戒航行序列
         }
         return 1.0;
     }
@@ -268,13 +284,13 @@ public class CalcAA {
      */
     private double getItemAirBonus(ItemDto item) {
         switch (item.getType3()) {
-            case 16:    // 高角砲
-            case 30:    // 高射装置
-                return 2;
-            case 15:    // 機銃
-                return 3;
-            case 11:    // 電探
-                return 1.5;
+        case 16: // 高角砲
+        case 30: // 高射装置
+            return 2;
+        case 15: // 機銃
+            return 3;
+        case 11: // 電探
+            return 1.5;
         }
         return 0;
     }
@@ -287,11 +303,11 @@ public class CalcAA {
      */
     private double getItemImprovementAirBonus(ItemDto item) {
         switch (item.getType3()) {
-            case 16:    // 高角砲
-            case 30:    // 高射装置
-                return item.getParam().getTaiku() <= 7 ? 1 : 1.5;
-            case 15:    // 機銃
-                return item.getParam().getTaiku() <= 7 ? 2 : 3;
+        case 16: // 高角砲
+        case 30: // 高射装置
+            return item.getParam().getTaiku() <= 7 ? 1 : 1.5;
+        case 15: // 機銃
+            return item.getParam().getTaiku() <= 7 ? 2 : 3;
         }
         return 0;
     }
@@ -304,15 +320,16 @@ public class CalcAA {
      */
     private double getItemFleetAirBonus(ItemDto item) {
         switch (item.getType3()) {
-            case 16:    // 高角砲
-            case 30:    // 高射装置
-                return 0.35;
-            case 12:    // 対空強化弾
-                return 0.6;
-            case 11:    // 電探
-                return 0.4;
+        case 16: // 高角砲
+        case 30: // 高射装置
+            return 0.35;
+        case 12: // 対空強化弾
+            return 0.6;
+        case 11: // 電探
+            return 0.4;
         }
-        if (item.getSlotitemId() == 9) return 0.25;  // 46cm三連装砲
+        if (item.getSlotitemId() == 9)
+            return 0.25; // 46cm三連装砲
         return 0.2;
     }
 
@@ -324,11 +341,12 @@ public class CalcAA {
      */
     private double getItemImprovementFleetAirBonus(ItemDto item) {
         switch (item.getType3()) {
-            case 16:    // 高角砲
-            case 30:    // 高射装置
-                return item.getParam().getTaiku() <= 7 ? 2 : 3;
-            case 11:    // 電探
-                if (item.getParam().getTaiku() > 1) return 1.5;
+        case 16: // 高角砲
+        case 30: // 高射装置
+            return item.getParam().getTaiku() <= 7 ? 2 : 3;
+        case 11: // 電探
+            if (item.getParam().getTaiku() > 1)
+                return 1.5;
         }
         return 0;
     }

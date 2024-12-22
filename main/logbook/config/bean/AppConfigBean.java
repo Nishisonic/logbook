@@ -54,6 +54,9 @@ public final class AppConfigBean {
     /** 母港タブのマップHP表示 */
     private boolean showMapHpInfo = false;
 
+    /** 母港タブの装備/艦娘ボタン表示 */
+    private boolean usePortButton = true;
+
     /** 音量 */
     private float soundLevel = 0.85f;
 
@@ -430,6 +433,9 @@ public final class AppConfigBean {
 
     /** 獲得資源を表示するか */
     private boolean itemGetLog = false;
+
+    /** 装備一覧のフィルタ形式 0:アイコン 1:カテゴリ */
+    private int itemFilterMethod = 0;
 
     private static RGB cloneRGB(RGB rgb) {
         return new RGB(rgb.red, rgb.green, rgb.blue);
@@ -2393,4 +2399,33 @@ public final class AppConfigBean {
     public void setPrintItemGetLog(boolean itemGetLog) {
         this.itemGetLog = itemGetLog;
     }
+
+    /**
+     * @return usePortButton
+     */
+    public boolean isUsePortButton() {
+        return this.usePortButton;
+    }
+
+    /**
+     * @param UsePortButton セットする UsePortButton
+     */
+    public void setUsePortButton(boolean usePortButton) {
+        this.usePortButton = usePortButton;
+    }
+
+    /**
+     * @return itemFilterMethod
+     */
+    public int getItemFilterMethod() {
+        return this.itemFilterMethod;
+    }
+
+    /**
+     * @param itemFilterMethod セットする itemFilterMethod
+     */
+    public void setItemFilterMethod(int itemFilterMethod) {
+        this.itemFilterMethod = itemFilterMethod;
+    }
+
 }

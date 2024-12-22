@@ -41,7 +41,7 @@ public class TPString implements Comparable<TPString> {
 
     public TPString(List<ShipDto> ships) {
         ships.stream().filter(ship -> !ship.isBadlyDamage())
-            .map(ship -> new ShipParam(ship)).forEach(param -> this.add(param));
+                .map(ship -> new ShipParam(ship)).forEach(param -> this.add(param));
         this.calc();
     }
 
@@ -78,7 +78,7 @@ public class TPString implements Comparable<TPString> {
     public String toString() {
         int S = this.TP;
         int A = (int) (this.TP * 0.7);
-        return String.format("TP獲得量: S %d / A %d。", S, A);
+        return String.format("TP獲得量: S %d / A %d", S, A);
     }
 
     private int toTPfromShipType(int type) {
@@ -122,8 +122,13 @@ public class TPString implements Comparable<TPString> {
         case 436: // 大発動艇(II号戦車/北アフリカ仕様)
         case 449: // 特大発動艇+一式砲戦車
         case 482: // 大発動艇(III号戦車/北アフリカ仕様)
+        case 494: // 特大発動艇+チハ
+        case 495: // 特大発動艇+チハ改
+        case 514: // 特大発動艇＋III号戦車J型
             return 8;
         case 167: // 特二式内火艇
+        case 525: // 特四式内火艇
+        case 526: // 特四式内火艇改
             return 2;
         case 145: // 戦闘糧食
         case 150: // 秋刀魚の缶詰
