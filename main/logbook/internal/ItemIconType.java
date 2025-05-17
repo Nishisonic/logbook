@@ -71,6 +71,7 @@ public class ItemIconType {
             this.put(55, "阻塞気球");
             this.put(56, "噴式局地戦闘機");
             this.put(57, "試作局地戦闘機");
+            this.put(58, "夜間爆撃機");
         }
     };
 

@@ -220,6 +220,12 @@ public class AirBattleDto {
             return "48:10cm連装高角砲改+高射装置改x2/対空電探";
         case 49:
             return "49:特殊高角砲/対空電探";
+        case 50:
+            return "50:10cm連装高角砲改(+高射装置改)x2/対空電探/94式高射装置";
+        case 51:
+            return "51:10cm連装高角砲改(+高射装置改)/対空電探/機銃";
+        case 52:
+            return "52:10cm連装高角砲改x2/対空電探/94式高射装置";
         }
         return "不明(" + id + ")";
     }
