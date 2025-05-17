@@ -8,6 +8,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -210,7 +211,7 @@ public class TsunDBClient extends Thread {
         int hqLvl = lastBattleDto.getHqLv();
         int difficulty = mapHpInfo.getDifficulty();
         if (json.containsKey("api_get_eventitem")) {
-            processEventReward(map, difficulty, json.get("api_get_eventitem"));
+            processEventReward(map, difficulty, json.get("api_get_eventitem"), json.get("api_select_reward_dict"));
         }
         int ship = lastBattleDto.isDropShip() ? lastBattleDto.getDropShipId() : -1;
         JsonObjectBuilder counts = Json.createObjectBuilder();
@@ -276,11 +277,12 @@ public class TsunDBClient extends Thread {
         });
     }
 
-    private static void processEventReward(String map, int difficulty, JsonValue rewards) {
+    private static void processEventReward(String map, int difficulty, JsonValue rewards, JsonValue selectreward) {
         String result = Json.createObjectBuilder()
                 .add("map", map)
                 .add("difficulty", difficulty)
                 .add("rewards", rewards)
+                .add("selectreward", selectreward)
                 .build()
                 .toString();
         getInstance().dataQueue.offer(new QueueItem("eventreward", result));
@@ -572,7 +574,7 @@ public class TsunDBClient extends Thread {
             engine.eval(br.lines().collect(Collectors.joining("")));
             long uniquekey = new BigDecimal(String.valueOf(
                     engine.eval("crc32c(JSON.stringify(" + tmp.build().getJsonObject("fleet").toString() + "))")))
-                            .longValue();
+                    .longValue();
             String result = tmp.add("uniquekey", uniquekey).build().toString();
             getInstance().dataQueue.offer(new QueueItem("friendlyfleet", result));
         } catch (ScriptException | IOException e) {
@@ -648,7 +650,7 @@ public class TsunDBClient extends Thread {
 
     private int post(String target, String data) {
         try {
-            URL url = new URL("https://tsundb.kc3.moe/api/" + target);
+            URL url = URI.create("https://tsundb.kc3.moe/api/" + target).toURL();
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("PUT");
             con.setDoOutput(true);

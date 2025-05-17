@@ -8,6 +8,7 @@ import java.io.OutputStreamWriter;
 import java.io.StringReader;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLEncoder;
 import java.security.MessageDigest;
@@ -258,7 +259,7 @@ public final class PushNotify {
         URL url = null;
         String postdata = postsb.toString();
         try {
-            url = new URL(posturi);
+            url = URI.create(posturi).toURL();
             connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
@@ -305,7 +306,7 @@ public final class PushNotify {
         String Auth_data = "Bearer"+" "+token;
         String postdata = postsb.toString();
         try {
-            url = new URL(posturi);
+            url = URI.create(posturi).toURL();
             connection = (HttpURLConnection) url.openConnection();
             connection.setDoOutput(true);
             connection.setRequestMethod("POST");
