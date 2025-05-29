@@ -1,7 +1,7 @@
 load("script/utils.js");
 
 function header() {
-	return [ "名称", "種別", "個数", "施錠" ];
+	return [ "名称", "カテゴリ", "アイコン", "個数", "施錠" ];
 }
 
 function begin() { }
@@ -17,6 +17,7 @@ function body(data) {
 
 	return toComparable([
 					data.info.name,
+					data.info.typeName2,
 					data.info.typeName,
 					data.items.size(),
 					locked | 0 ]);
