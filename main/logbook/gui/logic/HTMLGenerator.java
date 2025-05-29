@@ -8,10 +8,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import logbook.constants.AppConstants;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
+
+import logbook.constants.AppConstants;
 
 /**
  * @author Nekopanda
@@ -37,7 +37,7 @@ public class HTMLGenerator {
 
     public void genHeader(String title, boolean genCharset) throws IOException {
         this.sb.append("<!DOCTYPE html>").append("\r\n");
-        this.sb.append("<html>").append("\r\n");
+        this.sb.append("<html lang=\"ja\">").append("\r\n");
         this.sb.append("<head>").append("\r\n");
         if (genCharset) {
             this.sb.append("<meta charset=\"UTF-8\">").append("\r\n");
