@@ -26,7 +26,7 @@ public class UndefinedData implements Data {
     private final String fullUrl;
 
     // "/ksapi/..."
-    private final String url;
+    private final String path;
 
     private final byte[] request;
 
@@ -40,9 +40,9 @@ public class UndefinedData implements Data {
      * @param url URL
      * @param response レスポンスのバイト配列
      */
-    public UndefinedData(String fullUrl, String url, byte[] request, byte[] response) {
+    public UndefinedData(String fullUrl, String path, byte[] request, byte[] response) {
         this.fullUrl = fullUrl;
-        this.url = url;
+        this.path = path;
         this.request = request;
         this.response = response;
         this.date = Calendar.getInstance().getTime();
@@ -58,7 +58,7 @@ public class UndefinedData implements Data {
                 //
             }
         }
-        return new UndefinedData(this.fullUrl, this.url, this.request, responseDecoded);
+        return new UndefinedData(this.fullUrl, this.path, this.request, responseDecoded);
     }
 
     @Override
@@ -91,7 +91,7 @@ public class UndefinedData implements Data {
      */
     public final Data toDefinedData() {
         if (this.response.length != 0) {
-            DataType type = DataType.TYPEMAP.get(this.url);
+            DataType type = DataType.TYPEMAP.get(this.path);
 
             if (type != null) {
                 try {
@@ -142,8 +142,8 @@ public class UndefinedData implements Data {
         return this.fullUrl;
     }
 
-    public String getUrl() {
-        return this.url;
+    public String getPath() {
+        return this.path;
     }
 
     public byte[] getRequest() {
