@@ -79,7 +79,7 @@ public class DatabaseClient extends Thread {
         if (AppConfig.get().isSendDatabase() && (AppConfig.get().getAccessKey().length() > 0)) {
             for (String entry : sendDatabaseUrls)
             {
-                if (data.getUrl().endsWith(entry))
+                if (data.getPath().endsWith(entry))
                 {
                     getInstance().dataQueue.offer(new QueueItem(data));
                     break;
@@ -169,9 +169,9 @@ public class DatabaseClient extends Thread {
                                     public void run() {
                                         try {
                                             if (!ApplicationMain.main.getShell().isDisposed()) {
-                                                String url = data.getUrl();
+                                                String path = data.getPath();
                                                 ApplicationMain.main.printMessage("DBへ送信しました("
-                                                        + url.substring(url.lastIndexOf('/') + 1) + ")");
+                                                        + path.substring(path.lastIndexOf('/') + 1) + ")");
                                             }
                                         } catch (Exception e) {
                                             LOG.get().warn("DB送信でエラー", e);

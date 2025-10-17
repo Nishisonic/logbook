@@ -1,21 +1,32 @@
 package logbook.server.proxy;
 
+import java.io.File;
 import java.net.BindException;
+import java.net.InetSocketAddress;
+import java.util.Queue;
 
 import logbook.config.AppConfig;
 import logbook.gui.ApplicationMain;
 import logbook.internal.LoggerHolder;
+import net.lightbody.bmp.mitm.KeyStoreFileCertificateSource;
+import net.lightbody.bmp.mitm.manager.ImpersonatingMitmManager;
 
 import org.apache.commons.lang3.StringUtils;
-import org.eclipse.jetty.proxy.ConnectHandler;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.servlet.ServletContextHandler;
-import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.MessageBox;
+import org.littleshoot.proxy.ChainedProxy;
+import org.littleshoot.proxy.ChainedProxyAdapter;
+import org.littleshoot.proxy.ChainedProxyManager;
+import org.littleshoot.proxy.HttpFilters;
+import org.littleshoot.proxy.HttpFiltersSourceAdapter;
+import org.littleshoot.proxy.HttpProxyServer;
+import org.littleshoot.proxy.HttpProxyServerBootstrap;
+import org.littleshoot.proxy.MitmManager;
+import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
+
+import io.netty.channel.ChannelHandlerContext;
+import io.netty.handler.codec.http.HttpRequest;
 
 /**
  * プロキシサーバーです
@@ -25,7 +36,7 @@ public final class ProxyServer {
 
     private static final LoggerHolder LOG = new LoggerHolder(ProxyServer.class);
 
-    private static Server server;
+    private static HttpProxyServer server;
 
     private static String host;
     private static int port;
@@ -34,23 +45,46 @@ public final class ProxyServer {
 
     public static void start() {
         try {
-            server = new Server();
+            MitmManager mitmManager = ImpersonatingMitmManager.builder()
+                    .rootCertificateSource(new KeyStoreFileCertificateSource(
+                            "PKCS12",
+                            new File("config/logbook-keystore.p12"),
+                            "logbook",
+                            "changeit"))
+                    .build();
             updateSetting();
-            setConnector();
-
-            // httpsをプロキシできるようにConnectHandlerを設定
-            ConnectHandler proxy = new ConnectHandler();
-            server.setHandler(proxy);
-
-            // httpはこっちのハンドラでプロキシ
-            ServletContextHandler context = new ServletContextHandler(proxy, "/", ServletContextHandler.SESSIONS);
-            ServletHolder holder = new ServletHolder(new ReverseProxyServlet());
-            holder.setInitParameter("maxThreads", "256");
-            holder.setInitParameter("timeout", "600000");
-            context.addServlet(holder, "/*");
 
             try {
-                server.start();
+                InetSocketAddress address = host != null ? new InetSocketAddress(host, port)
+                        : new InetSocketAddress(port);
+                HttpProxyServerBootstrap serverBootstrap = DefaultHttpProxyServer.bootstrap()
+                        .withAddress(address)
+                        .withManInTheMiddle(mitmManager)
+                        .withFiltersSource(new HttpFiltersSourceAdapter() {
+                            @Override
+                            public HttpFilters filterRequest(HttpRequest originalRequest, ChannelHandlerContext ctx) {
+                                return new JsonLoggingFilter(originalRequest, ctx);
+                            }
+                        });
+                // lookupChainedProxies内で振り分けようとしたら上手くいかなかった
+                if (AppConfig.get().isUseProxy()) {
+                    // 上流プロキシ使用有無
+                    server = serverBootstrap.withChainProxyManager(new ChainedProxyManager() {
+                        @Override
+                        public void lookupChainedProxies(HttpRequest httpRequest, Queue<ChainedProxy> chainedProxies) {
+                            chainedProxies.add(new ChainedProxyAdapter() {
+                                @Override
+                                public InetSocketAddress getChainedProxyAddress() {
+                                    // 上流プロキシのホストとポート
+                                    return new InetSocketAddress(proxyHost, proxyPort);
+                                }
+                            });
+                        }
+                    }).start();
+                }
+                else {
+                    server = serverBootstrap.start();
+                }
             } catch (Exception e) {
                 handleException(e);
             }
@@ -67,8 +101,7 @@ public final class ProxyServer {
             }
             if (updateSetting()) {
                 server.stop();
-                setConnector();
-                server.start();
+                start();
                 ApplicationMain.logPrint("プロキシサーバを再起動しました");
             }
         } catch (Exception e) {
@@ -81,7 +114,6 @@ public final class ProxyServer {
         try {
             if (server != null) {
                 server.stop();
-                server.join();
                 server = null;
             }
         } catch (Exception e) {
@@ -116,13 +148,6 @@ public final class ProxyServer {
         proxyHost = newProxyHost;
         proxyPort = newProxyPort;
         return true;
-    }
-
-    private static void setConnector() {
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(port);
-        connector.setHost(host);
-        server.setConnectors(new Connector[] { connector });
     }
 
     private static void handleException(Exception e) {
