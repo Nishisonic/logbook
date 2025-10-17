@@ -24,7 +24,7 @@ public class AppConstants {
     public static final String SUFFIX = "拡張版";
 
     /** バージョン */
-    public static final String VERSION = "2.5.7.62";
+    public static final String VERSION = "2.5.7.63";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://github.com/Nishisonic/logbook/releases");
@@ -231,6 +231,14 @@ public class AppConstants {
 
     /** 多重起動検出用 */
     public static final File LOCK_FILE = new File("./config/lock");
+
+    /** 証明書ファイル */
+    public static final File CRT_FILE = new File("./config/logbook-ca.crt");
+    public static final File KEY_FILE = new File("./config/logbook-ca.key");
+    public static final File PKCS12_FILE = new File("./config/logbook-keystore.p12");
+
+    /** 証明書ファイルパスワード */
+    public static final String PKCS12_PASSWORD = "changeit";
 
     /** 保有資材:燃料 */
     public static final int MATERIAL_FUEL = 1;

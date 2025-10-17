@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.Queue;
 
 import logbook.config.AppConfig;
+import logbook.constants.AppConstants;
 import logbook.gui.ApplicationMain;
 import logbook.internal.LoggerHolder;
 import net.lightbody.bmp.mitm.KeyStoreFileCertificateSource;
@@ -48,7 +49,7 @@ public final class ProxyServer {
             MitmManager mitmManager = ImpersonatingMitmManager.builder()
                     .rootCertificateSource(new KeyStoreFileCertificateSource(
                             "PKCS12",
-                            new File("config/logbook-keystore.p12"),
+                            AppConstants.PKCS12_FILE,
                             "logbook",
                             "changeit"))
                     .build();

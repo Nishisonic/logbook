@@ -47,6 +47,7 @@ import logbook.server.proxy.ProxyServer;
 import logbook.server.proxy.TsunDBClient;
 import logbook.thread.ThreadManager;
 import logbook.thread.ThreadStateObserver;
+import logbook.util.CAKeyStore;
 import logbook.util.JIntellitypeWrapper;
 import logbook.util.SwtUtils;
 
@@ -354,6 +355,7 @@ public final class ApplicationMain extends WindowBase {
             }
             // 設定読み込み
             AppConfig.load();
+            CAKeyStore.genrateIfNeeded();
             /*　static initializer に移行
             ShipConfig.load();
             MasterDataConfig.load();
