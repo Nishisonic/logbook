@@ -50,7 +50,7 @@ public final class ProxyServer {
                             "PKCS12",
                             new File("config/logbook-keystore.p12"),
                             "logbook",
-                            "logbook"))
+                            "changeit"))
                     .build();
             updateSetting();
 

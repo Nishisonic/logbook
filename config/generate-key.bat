@@ -5,4 +5,7 @@ openssl genrsa -out logbook-ca.key 2048
 openssl req -x509 -new -nodes -key logbook-ca.key -sha256 -days 36500 -out logbook-ca.crt -subj "/C=JP/ST=Tokyo/L=Tokyo/O=MyOrg/OU=MITM/CN=LogbookCA"
 
 # 3. PKCS12を作成
-openssl pkcs12 -export -in logbook-ca.crt -inkey logbook-ca.key -out logbook-keystore.p12 -name logbook -passout pass:logbook
+openssl pkcs12 -export -in logbook-ca.crt -inkey logbook-ca.key -out logbook-keystore.p12 -name logbook -passout pass:changeit
+
+# 4. 証明書を保存
+keytool -importcert -alias logbookCA -file logbook-ca.crt -keystore "%JAVA_HOME%\lib\security\cacerts" -storepass changeit -noprompt
