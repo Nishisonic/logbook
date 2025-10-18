@@ -356,6 +356,7 @@ public final class ApplicationMain extends WindowBase {
             // 設定読み込み
             AppConfig.load();
             CAKeyStore.genrateIfNeeded();
+            CAKeyStore.installCertificateIfNeeded();
             /*　static initializer に移行
             ShipConfig.load();
             MasterDataConfig.load();
