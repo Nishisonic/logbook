@@ -1,6 +1,5 @@
 package logbook.server.proxy;
 
-import java.io.File;
 import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.util.Queue;
@@ -52,6 +51,7 @@ public final class ProxyServer {
                             AppConstants.PKCS12_FILE,
                             "logbook",
                             "changeit"))
+                    .trustAllServers(AppConfig.get().isTrustAllServers())
                     .build();
             updateSetting();
 

@@ -239,6 +239,12 @@ public final class ConfigDialog extends Dialog {
         proxyPortSpinner.setLayoutData(SwtUtils.initSpinner(55,
                 new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1)));
 
+        final Button isTrustAllServersButton = new Button(compositeConnection, SWT.CHECK);
+        isTrustAllServersButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
+        isTrustAllServersButton.setText("証明書検証をスキップする");
+        isTrustAllServersButton.setToolTipText("中間者攻撃に対し脆弱性を抱えることになるため、必要な人以外はONにしないでください");
+        isTrustAllServersButton.setSelection(AppConfig.get().isTrustAllServers());
+
         final Button sendTsunDBButton = new Button(compositeConnection, SWT.CHECK);
         sendTsunDBButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
         sendTsunDBButton.setText("TsunDBへデータを送信する");
@@ -1270,6 +1276,7 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setUseProxy(useProxyButton.getSelection());
                 AppConfig.get().setProxyHost(proxyHostText.getText());
                 AppConfig.get().setProxyPort(proxyPortSpinner.getSelection());
+                AppConfig.get().setIsTrustAllServers(isTrustAllServersButton.getSelection());
                 AppConfig.get().setSendTsunDB(sendTsunDBButton.getSelection());
                 AppConfig.get().setTsunDBSendLog(tsunDBLogButton.getSelection());
                 // push notify

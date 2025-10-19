@@ -17,8 +17,12 @@ import java.util.Base64;
 import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.KeyUsage;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
@@ -42,11 +46,11 @@ public class CAKeyStore {
         keyGen.initialize(2048);
         KeyPair keyPair = keyGen.generateKeyPair();
 
-        // 2. 自己署名 X.509 証明書作成（100年有効）
+        // 2. 自己署名 X.509 証明書作成（10年有効）
         X500Name owner = new X500Name("CN=" + AppConstants.CN_ALIAS + ", OU=MITM, O=MyOrg, L=Tokyo, ST=Tokyo, C=JP");
         BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
         Date notBefore = new Date();
-        Date notAfter = new Date(notBefore.getTime() + 36500L * 24 * 60 * 60 * 1000); // 100年
+        Date notAfter = new Date(notBefore.getTime() + 3650L * 24 * 60 * 60 * 1000); // 10年
 
         X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
                 owner,
@@ -55,6 +59,20 @@ public class CAKeyStore {
                 notAfter,
                 owner,
                 keyPair.getPublic());
+
+        // certBuilder.addExtensionの設定がないとFirefox上で証明書がインポートできない
+
+        // Basic Constraints に CA:TRUE を入れる
+        certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
+        // Key Usage を明示
+        certBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign));
+
+        // Subject Key Identifier / Authority Key Identifier を付与
+        JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
+        certBuilder.addExtension(Extension.subjectKeyIdentifier, false,
+                extUtils.createSubjectKeyIdentifier(keyPair.getPublic()));
+        certBuilder.addExtension(Extension.authorityKeyIdentifier, false,
+                extUtils.createAuthorityKeyIdentifier(keyPair.getPublic()));
 
         ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
                 .setProvider("BC")
@@ -125,6 +143,12 @@ public class CAKeyStore {
      * @throws IOException 
      */
     private static int installToWindows() throws InterruptedException, IOException {
+        // Windows 7だとPowershell実行で止まるらしい
+        if (!isWindows10OrLater()) {
+            System.out.println("Windows 10未満なためインストールをスキップします。");
+            return 0;
+        }
+
         if (existsTrustedRootCertificationAuthorities()) {
             System.out.println("証明書は Windows の信頼されたルート証明機関に登録されているためスキップします。");
             return 0;
@@ -139,6 +163,23 @@ public class CAKeyStore {
                 "Import-Certificate -FilePath \"" + AppConstants.CRT_FILE
                         + "\" -CertStoreLocation \"Cert:\\CurrentUser\\Root\"");
         return pb.inheritIO().start().waitFor();
+    }
+
+    private static boolean isWindows10OrLater() {
+        String osName = System.getProperty("os.name").toLowerCase();
+        String osVersion = System.getProperty("os.version");
+
+        if (!osName.contains("windows")) {
+            return false;
+        }
+
+        try {
+            double version = Double.parseDouble(osVersion);
+            return version >= 10.0;
+        } catch (NumberFormatException e) {
+            // Windows 11などで "10.0" としか返らない場合があるため
+            return osName.contains("windows 10") || osName.contains("windows 11");
+        }
     }
 
     private static boolean existsSystemTrustedRootCertificate() throws IOException, InterruptedException {
