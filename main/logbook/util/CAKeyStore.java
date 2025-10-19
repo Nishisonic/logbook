@@ -18,8 +18,11 @@ import java.util.Date;
 
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.ExtendedKeyUsage;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.KeyUsage;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
+import org.bouncycastle.asn1.x509.KeyPurposeId;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
@@ -47,11 +50,12 @@ public class CAKeyStore {
         KeyPair keyPair = keyGen.generateKeyPair();
 
         // 2. 自己署名 X.509 証明書作成（10年有効）
-        X500Name owner = new X500Name("CN=" + AppConstants.CN_ALIAS + ", OU=MITM, O=MyOrg, L=Tokyo, ST=Tokyo, C=JP");
+        X500Name owner = new X500Name("CN=" + AppConstants.CN_ALIAS);
         BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
         Date notBefore = new Date();
         Date notAfter = new Date(notBefore.getTime() + 3650L * 24 * 60 * 60 * 1000); // 10年
 
+        // 3. 証明書ビルダー
         X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
                 owner,
                 serial,
@@ -60,20 +64,37 @@ public class CAKeyStore {
                 owner,
                 keyPair.getPublic());
 
-        // certBuilder.addExtensionの設定がないとFirefox上で証明書がインポートできない
-
-        // Basic Constraints に CA:TRUE を入れる
+        // 4. Basic Constraints（CA=TRUE, パス長制約なし）
         certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
-        // Key Usage を明示
-        certBuilder.addExtension(Extension.keyUsage, true, new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign));
 
-        // Subject Key Identifier / Authority Key Identifier を付与
+        // 5. KeyUsage（KancolleSnifferは指定していなかったので合わせてみる）
+        //    CA認証だとKeyUsage.keyCertSign | KeyUsage.cRLSign
+        //    サーバ認証だとKeyUsage.digitalSignature | KeyUsage.keyEncipherment
+        // certBuilder.addExtension(Extension.keyUsage, true,
+        //         new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign));
+
+        // 6. EnhancedKeyUsage（サーバ認証）
+        //    CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
+        certBuilder.addExtension(Extension.extendedKeyUsage, false,
+                new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
+
+        // 7. SAN（Subject Alternative Name）
+        //    CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
+        GeneralName[] names = new GeneralName[AppConstants.KANCOLLE_DOMAIN_LIST.length];
+        for (int i = 0; i < AppConstants.KANCOLLE_DOMAIN_LIST.length; i++) {
+            names[i] = new GeneralName(GeneralName.dNSName, AppConstants.KANCOLLE_DOMAIN_LIST[i]);
+        }
+
+        certBuilder.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(names));
+
+        // 8. SKI/AKI（識別子）
         JcaX509ExtensionUtils extUtils = new JcaX509ExtensionUtils();
         certBuilder.addExtension(Extension.subjectKeyIdentifier, false,
                 extUtils.createSubjectKeyIdentifier(keyPair.getPublic()));
         certBuilder.addExtension(Extension.authorityKeyIdentifier, false,
                 extUtils.createAuthorityKeyIdentifier(keyPair.getPublic()));
 
+        // 9. 署名
         ContentSigner signer = new JcaContentSignerBuilder("SHA256withRSA")
                 .setProvider("BC")
                 .build(keyPair.getPrivate());
@@ -82,18 +103,18 @@ public class CAKeyStore {
                 .setProvider("BC")
                 .getCertificate(certBuilder.build(signer));
 
-        // 3. PKCS12 キーストアに格納
+        // 10. PKCS12 キーストアに格納
         KeyStore ks = KeyStore.getInstance("PKCS12");
         ks.load(null, null);
         ks.setKeyEntry("logbook", keyPair.getPrivate(), AppConstants.PKCS12_PASSWORD.toCharArray(),
                 new X509Certificate[] { cert });
 
-        // 4. ファイル出力
+        // 11. ファイル出力
         try (FileOutputStream fos = new FileOutputStream(AppConstants.PKCS12_FILE)) {
             ks.store(fos, AppConstants.PKCS12_PASSWORD.toCharArray());
         }
 
-        // 5. PEM 形式で秘密鍵・証明書も出力
+        // 12. PEM 形式で秘密鍵・証明書も出力
         // 秘密鍵 PEM
         try (Writer out = new FileWriter(AppConstants.KEY_FILE)) {
             out.write("-----BEGIN PRIVATE KEY-----\n");
