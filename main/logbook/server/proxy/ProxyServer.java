@@ -51,7 +51,7 @@ public final class ProxyServer {
                             "PKCS12",
                             AppConstants.PKCS12_FILE,
                             "logbook",
-                            "changeit"))
+                            AppConstants.PKCS12_PASSWORD))
                     .trustAllServers(isTrustAllServers)
                     .build();
             updateSetting();
