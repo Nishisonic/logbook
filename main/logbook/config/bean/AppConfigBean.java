@@ -30,7 +30,8 @@ public final class AppConfigBean {
     /** プロキシポート */
     private int proxyPort = 8080;
 
-    private boolean isTrustAllServers = false;
+    /** 証明書全信頼 */
+    private boolean trustAllServers = false;
 
     /** 最前面に表示 */
     private boolean onTop = true;
@@ -507,16 +508,20 @@ public final class AppConfigBean {
         this.proxyPort = proxyPort;
     }
 
+    /**
+     * 証明書検証を完全にスキップするかを取得します
+     * @param trustAllServers
+     */
     public boolean isTrustAllServers() {
-        return this.isTrustAllServers;
+        return this.trustAllServers;
     }
 
     /**
      * 証明書検証を完全にスキップするか
-     * @param isTrustAllServers
+     * @param trustAllServers
      */
-    public void setIsTrustAllServers(boolean isTrustAllServers) {
-        this.isTrustAllServers = isTrustAllServers;
+    public void setTrustAllServers(boolean trustAllServers) {
+        this.trustAllServers = trustAllServers;
     }
 
     /**

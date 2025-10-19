@@ -1276,7 +1276,7 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setUseProxy(useProxyButton.getSelection());
                 AppConfig.get().setProxyHost(proxyHostText.getText());
                 AppConfig.get().setProxyPort(proxyPortSpinner.getSelection());
-                AppConfig.get().setIsTrustAllServers(isTrustAllServersButton.getSelection());
+                AppConfig.get().setTrustAllServers(isTrustAllServersButton.getSelection());
                 AppConfig.get().setSendTsunDB(sendTsunDBButton.getSelection());
                 AppConfig.get().setTsunDBSendLog(tsunDBLogButton.getSelection());
                 // push notify
