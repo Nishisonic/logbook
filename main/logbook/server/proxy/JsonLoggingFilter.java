@@ -22,6 +22,7 @@ import io.netty.handler.codec.http.HttpResponse;
 import io.netty.handler.codec.http.HttpResponseStatus;
 import io.netty.handler.codec.http.HttpVersion;
 import io.netty.handler.codec.http.LastHttpContent;
+import logbook.config.AppConfig;
 import logbook.data.Data;
 import logbook.data.DataType;
 import logbook.data.UndefinedData;
@@ -50,16 +51,18 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
 
     @Override
     public HttpResponse clientToProxyRequest(HttpObject httpObject) {
-        if (!isLoopback) {
-            // リモートホストがローカルループバックアドレス以外の場合400を返し通信しない
-            String message = "400 Bad Request - Access denied";
-            DefaultFullHttpResponse response = new DefaultFullHttpResponse(
-                    HttpVersion.HTTP_1_1,
-                    HttpResponseStatus.BAD_REQUEST,
-                    Unpooled.wrappedBuffer(message.getBytes(StandardCharsets.UTF_8)));
-            response.headers().set(HttpHeaderNames.CONTENT_LENGTH, message.length());
-            response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
-            return response;
+        if (AppConfig.get().isAllowOnlyFromLocalhost() && !AppConfig.get().isCloseOutsidePort()) {
+            if (!isLoopback) {
+                // リモートホストがローカルループバックアドレス以外の場合400を返し通信しない
+                String message = "400 Bad Request - Access denied";
+                DefaultFullHttpResponse response = new DefaultFullHttpResponse(
+                        HttpVersion.HTTP_1_1,
+                        HttpResponseStatus.BAD_REQUEST,
+                        Unpooled.wrappedBuffer(message.getBytes(StandardCharsets.UTF_8)));
+                response.headers().set(HttpHeaderNames.CONTENT_LENGTH, message.length());
+                response.headers().set(HttpHeaderNames.CONTENT_TYPE, "text/plain");
+                return response;
+            }
         }
         if (httpObject instanceof HttpRequest) {
             this.request = (HttpRequest) httpObject;

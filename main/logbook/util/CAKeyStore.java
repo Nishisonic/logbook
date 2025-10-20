@@ -170,6 +170,12 @@ public class CAKeyStore {
             return 0;
         }
 
+        // powershellが使えない場合も飛ばす
+        if (!isPowerShellAvailable()) {
+            System.out.println("powershell が使えないためインストールをスキップします。");
+            return 0;
+        }
+
         if (existsTrustedRootCertificationAuthorities()) {
             System.out.println("証明書は Windows の信頼されたルート証明機関に登録されているためスキップします。");
             return 0;
@@ -184,6 +190,11 @@ public class CAKeyStore {
                 "Import-Certificate -FilePath \"" + AppConstants.CRT_FILE
                         + "\" -CertStoreLocation \"Cert:\\CurrentUser\\Root\"");
         return pb.inheritIO().start().waitFor();
+    }
+
+    public static boolean isPowerShellAvailable() throws InterruptedException, IOException {
+        ProcessBuilder pb = new ProcessBuilder("which", "powershell.exe");
+        return pb.inheritIO().start().waitFor() == 0;
     }
 
     private static boolean isWindows10OrLater() {
