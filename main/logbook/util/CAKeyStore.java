@@ -193,7 +193,7 @@ public class CAKeyStore {
     }
 
     public static boolean isPowerShellAvailable() throws InterruptedException, IOException {
-        ProcessBuilder pb = new ProcessBuilder("which", "powershell.exe");
+        ProcessBuilder pb = new ProcessBuilder("where", "powershell.exe");
         return pb.inheritIO().start().waitFor() == 0;
     }
 
