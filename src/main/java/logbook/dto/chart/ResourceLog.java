@@ -94,7 +94,6 @@ public class ResourceLog extends AbstractDto {
 
                     int baseIdx;
                     // 拡張版の方は１列追加してしまったので、両方に対応させる！
-                    // TODO: isCreatable()を使うとjava.lang.NoSuchMethodErrorになってしまう
                     if (NumberUtils.isNumber(colums[1])) {
                         // 本家のログ
                         baseIdx = 1;

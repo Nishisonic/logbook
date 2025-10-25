@@ -66,7 +66,7 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
         }
         if (httpObject instanceof HttpRequest) {
             this.request = (HttpRequest) httpObject;
-            this.isHttps = this.request.getMethod().equals(HttpMethod.CONNECT);
+            this.isHttps = this.request.method().equals(HttpMethod.CONNECT);
         }
         if (httpObject instanceof HttpContent) {
             HttpContent content = (HttpContent) httpObject;
@@ -110,7 +110,7 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
                 this.response.headers().get(HttpHeaderNames.CONTENT_TYPE))) {
             if (this.requestBodyBuffer != null) {
                 final String serverName = this.request.headers().get(HttpHeaderNames.HOST);
-                String path = new URI(this.request.getUri()).getPath();
+                String path = new URI(this.request.uri()).getPath();
                 String fullUrl = (this.isHttps ? "https" : "http") + "://" + serverName + path;
                 final UndefinedData rawData = new UndefinedData(fullUrl, path,
                         this.requestBodyBuffer.toByteArray(), this.responseBodyBuffer.toByteArray());
