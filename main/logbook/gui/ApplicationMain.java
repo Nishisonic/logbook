@@ -42,7 +42,6 @@ import logbook.gui.widgets.FleetComposite;
 import logbook.internal.*;
 import logbook.internal.Item;
 import logbook.scripting.ScriptData;
-import logbook.server.proxy.DatabaseClient;
 import logbook.server.proxy.ProxyServer;
 import logbook.server.proxy.TsunDBClient;
 import logbook.thread.ThreadManager;
@@ -1806,7 +1805,6 @@ public final class ApplicationMain extends WindowBase {
         SWTResourceManager.dispose();
         // プロキシサーバーをシャットダウンする
         ProxyServer.end();
-        DatabaseClient.end();
         TsunDBClient.end();
         // ホットキーを解除
         JIntellitypeWrapper.cleanup();

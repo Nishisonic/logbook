@@ -4,16 +4,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 import logbook.config.AppConfig;
-import logbook.server.proxy.Filter;
+import logbook.constants.AppConstants;
 import logbook.util.SwtUtils;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -35,7 +35,7 @@ import org.eclipse.swt.widgets.Text;
 public final class CreatePacFileDialog extends Dialog {
 
     protected static final String SCRIPT = "function FindProxyForURL(url, host) '{'\r\n"
-            + "  if (dnsDomainIs(host, \"{0}\")) '{'\r\n"
+            + "  if ({0}) '{'\r\n"
             + "     return \"PROXY 127.0.0.1:{1}; DIRECT\";\r\n"
             + "  '}'\r\n"
             + "  return \"DIRECT\";\r\n"
@@ -43,7 +43,6 @@ public final class CreatePacFileDialog extends Dialog {
 
     protected Shell shell;
 
-    protected String server;
     protected Text iePath;
     protected Text firefoxPath;
 
@@ -84,33 +83,6 @@ public final class CreatePacFileDialog extends Dialog {
 
         Label labelTitle = new Label(composite, SWT.NONE);
         labelTitle.setText("自動プロキシ構成スクリプトファイルを生成します");
-
-        String server = Filter.getServerName();
-        if (server == null) {
-            Group manualgroup = new Group(composite, SWT.NONE);
-            manualgroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            manualgroup.setLayout(new GridLayout(2, false));
-            manualgroup.setText("鎮守府サーバーが未検出です。DNSドメインを入力して下さい。");
-
-            Label iplabel = new Label(manualgroup, SWT.NONE);
-            iplabel.setText("DNSドメイン名:");
-
-            final Text text = new Text(manualgroup, SWT.BORDER);
-            GridData gdip = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
-            gdip.widthHint = SwtUtils.DPIAwareWidth(150);
-            text.setLayoutData(gdip);
-            text.setText("kancolle-server.com");
-            text.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    CreatePacFileDialog.this.server = text.getText();
-                }
-            });
-
-            this.server = "kancolle-server.com";
-        } else {
-            this.server = server;
-        }
 
         Button storeButton = new Button(composite, SWT.NONE);
         storeButton.setText("保存先を選択...");
@@ -173,14 +145,17 @@ public final class CreatePacFileDialog extends Dialog {
                         + "次にブラウザの設定を行って下さい。");
                 messageBox.open();
 
+                String condition = Arrays.stream(AppConstants.KANCOLLE_DOMAIN_LIST)
+                        .map((domain) -> "dnsDomainIs(host, \"" + domain + "\")").collect(Collectors.joining(" || "));
                 String script = MessageFormat.format(CreatePacFileDialog.SCRIPT,
-                        this.parent.server.replace(".", "\\."),
+                        condition,
                         Integer.toString(AppConfig.get().getListenPort()));
 
                 File file = new File(filename);
                 if (file.getAbsolutePath().startsWith("\\\\")) {
                     this.parent.iePath.setText("file://\\\\" + file.getAbsolutePath().substring(2).replace("\\", "/"));
-                } else {
+                }
+                else {
                     this.parent.iePath.setText("file://" + file.getAbsolutePath().replace("\\", "/"));
                 }
                 this.parent.firefoxPath.setText("file:///" + file.toURI().toString().replaceFirst("file:/", ""));

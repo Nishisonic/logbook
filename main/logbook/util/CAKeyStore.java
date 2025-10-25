@@ -187,8 +187,10 @@ public class CAKeyStore {
         ProcessBuilder pb = new ProcessBuilder(
                 "powershell.exe",
                 "-Command",
-                "Import-Certificate -FilePath \"" + AppConstants.CRT_FILE
-                        + "\" -CertStoreLocation \"Cert:\\CurrentUser\\Root\"");
+                "Import-PfxCertificate -FilePath \"" + AppConstants.PKCS12_FILE
+                        + "\" -Password (ConvertTo-SecureString -String \"" + AppConstants.PKCS12_PASSWORD
+                        + "\" -AsPlainText -Force)"
+                        + " -CertStoreLocation \"Cert:\\CurrentUser\\Root\"");
         return pb.inheritIO().start().waitFor();
     }
 
@@ -272,9 +274,27 @@ public class CAKeyStore {
             System.out.println("証明書はまだ登録されていません。");
         }
 
-        String command = String.format(
+        int result = 0;
+
+        // (1) .p12 をキーチェーンにインポート
+        String importCommand = String.format(
+                "osascript -e 'do shell script \"security import %s -k /Library/Keychains/System.keychain -P %s -A\" with administrator privileges'",
+                AppConstants.PKCS12_FILE,
+                "your_password");
+        result += new ProcessBuilder("bash", "-c", importCommand)
+                .inheritIO()
+                .start()
+                .waitFor();
+
+        // (2) ルート証明書として信頼設定（CRTファイルを併用）
+        String trustCommand = String.format(
                 "osascript -e 'do shell script \"security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s\" with administrator privileges'",
                 AppConstants.CRT_FILE);
-        return new ProcessBuilder("bash", "-c", command).inheritIO().start().waitFor();
+        result += new ProcessBuilder("bash", "-c", trustCommand)
+                .inheritIO()
+                .start()
+                .waitFor();
+
+        return result;
     }
 }
