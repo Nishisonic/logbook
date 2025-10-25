@@ -9,7 +9,7 @@
             "name": "Debug (Launch)-ApplicationMain<logbook>",
             "request": "launch",
             "mainClass": "logbook.gui.ApplicationMain",
-            "projectName": "logbook",
-        },
+            "projectName": "logbook"
+        }
     ]
 }
