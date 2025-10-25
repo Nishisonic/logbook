@@ -24,7 +24,7 @@ public class AppConstants {
     public static final String SUFFIX = "拡張版";
 
     /** バージョン */
-    public static final String VERSION = "2.5.7.70";
+    public static final String VERSION = "2.5.7.71";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://github.com/Nishisonic/logbook/releases");
@@ -331,9 +331,6 @@ public class AppConstants {
 
     /** 航海日誌のロゴ */
     public static final String LOGO = "/logo.png";
-
-    /** Twitterのロゴ */
-    public static final String TWITTER = "/twitter.png";
 
     /** 艦隊タブの艦娘ラベルに設定するツールチップテキスト */
     public static final String TOOLTIP_FLEETTAB_SHIP = "HP:{0}/{1} 燃料:{2}/{3} 弾:{4}/{5}\nNext:{6}exp";

@@ -18,8 +18,6 @@ import javax.imageio.stream.ImageOutputStream;
 import logbook.config.AppConfig;
 import logbook.constants.AppConstants;
 import logbook.gui.logic.LayoutLogic;
-import logbook.gui.twitter.TweetDialog;
-import logbook.gui.twitter.TwitterClient;
 import logbook.internal.LoggerHolder;
 import logbook.util.AwtUtils;
 import logbook.util.SwtUtils;
@@ -46,7 +44,6 @@ import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Spinner;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.wb.swt.SWTResourceManager;
 
 /**
  * キャプチャダイアログ
@@ -62,7 +59,6 @@ public final class CaptureDialog extends WindowBase {
     private Composite composite;
     private Text text;
     private Button capture;
-    private Button twitter;
     private Button interval;
     private Spinner intervalms;
 
@@ -189,7 +185,7 @@ public final class CaptureDialog extends WindowBase {
 
         Composite buttonComposite = new Composite(this.shell, SWT.NONE);
         buttonComposite.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true, 2, 1));
-        buttonComposite.setLayout(new GridLayout(2, true));
+        buttonComposite.setLayout(new GridLayout(1, true));
 
         this.capture = new Button(buttonComposite, SWT.NONE);
         this.capture.setFont(this.font);
@@ -199,12 +195,6 @@ public final class CaptureDialog extends WindowBase {
         this.capture.setEnabled(false);
         this.capture.setText(getCaptureButtonText(false, this.interval.getSelection()));
         this.capture.addSelectionListener(new CaptureStartAdapter());
-
-        this.twitter = new Button(buttonComposite, SWT.NONE);
-        this.twitter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL));
-        this.twitter.setEnabled(false);
-        this.twitter.addSelectionListener(new TwitterAdapter());
-        SwtUtils.setButtonImage(this.twitter, SWTResourceManager.getImage(WindowBase.class, AppConstants.TWITTER));
 
         this.shell.addListener(SWT.Dispose, new Listener() {
             @Override
@@ -268,7 +258,6 @@ public final class CaptureDialog extends WindowBase {
             this.text.setText("(" + rectangle.x + "," + rectangle.y + ")-("
                     + (rectangle.x + rectangle.width) + "," + (rectangle.y + rectangle.height) + ")");
             this.capture.setEnabled(true);
-            this.twitter.setEnabled(true);
         }
     }
 
@@ -459,27 +448,6 @@ public final class CaptureDialog extends WindowBase {
                 CaptureDialog.this.captureAndSave();
             } catch (Exception e) {
                 LOG.get().warn("キャプチャ中に例外が発生しました", e);
-            }
-        }
-    }
-
-    /**
-     * Twitterボタンを押した時
-     *
-     */
-    public final class TwitterAdapter extends SelectionAdapter {
-
-        @Override
-        public void widgetSelected(SelectionEvent ev) {
-            try {
-                File file = CaptureDialog.this.captureAndSave();
-                if (TwitterClient.getInstance().prepareAccessToken(CaptureDialog.this)) {
-                    TweetDialog tweetDialog = new TweetDialog(
-                            CaptureDialog.this, file);
-                    tweetDialog.open();
-                }
-            } catch (Exception e) {
-                LOG.get().warn("つぶやく途中で例外が発生しました", e);
             }
         }
     }

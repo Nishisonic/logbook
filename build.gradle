@@ -14,16 +14,39 @@ plugins {
 
 // checkstyle {
 //     toolVersion = '8.45.1'
-//     configFile = file('checkstyle.xml') // ルールファイル
+//     configFile = file('checkstyle.xml')
 // }
 
 repositories {
     // Use Maven Central for resolving dependencies.
     mavenCentral()
+    flatDir {
+        dirs 'lib'
+    }
 }
 
 dependencies {
-    implementation fileTree(dir: 'lib', include: ['*.jar'])
+    implementation name: 'annotation'                           // @CheckForNullのタグ付用
+    implementation name: 'bcpkix-jdk15on-1.68'                  // 証明書作成用
+    implementation name: 'bcprov-jdk15on-1.68'                  // 証明書作成用
+    implementation name: 'browsermob-dist-2.1.4'                // HTTPS通信用
+    implementation name: 'commons-codec-1.15'                   // 汎用
+    implementation name: 'commons-io-2.11.0'                    // 汎用
+    implementation name: 'commons-lang3-3.12.0'                 // 汎用
+    implementation name: 'commons-logging-1.2'                  // 汎用
+    implementation name: 'javax.json-1.0'                       // JSON処理用
+    implementation name: 'jintellitype-1.3.9'                   // ショートカットキー用
+    implementation name: 'littleproxy-1.1.2-littleproxy-shade'  // HTTPS通信用
+    implementation name: 'log4j-api-2.17.1'                     // ログ用
+    implementation name: 'log4j-core-2.17.1'                    // ログ用
+    implementation name: 'opencsv-2.3'                          // CSV処理用
+    implementation name: 'protostuff-api-1.0.7'                 // 報告書のタグ付用
+    implementation name: 'protostuff-collectionschema-1.0.7'    // 報告書のタグ付用
+    implementation name: 'protostuff-core-1.0.7'                // 報告書のタグ付用
+    implementation name: 'protostuff-runtime-1.0.7'             // 報告書のタグ付用
+    implementation name: 'swt'                                  // 描画用
+    // Arm64 : https://archive.eclipse.org/eclipse/downloads/drops4/R-4.20-202106111600/
+    // x86_64: https://archive.eclipse.org/eclipse/downloads/drops4/R-4.6.2-201611241400/
 }
 
 java {
@@ -47,40 +70,6 @@ sourceSets {
     main {
         java {
             srcDirs = ['src/main/java'] // .classpath の src に相当
-        }
-    }
-}
-
-// ---------------------------
-// Runnable JAR + lib 配置
-// ---------------------------
-def destDir = file("$buildDir/../dest")
-def destLibDir = new File(destDir, "logbook_lib")
-
-tasks.register('create_run_jar', Jar) {
-    group = 'build'
-    description = 'Creates a runnable JAR with libraries in subfolder.'
-
-    archiveFileName.set('logbook.jar')
-    destinationDirectory.set(destDir)
-
-    manifest {
-        attributes(
-            'Main-Class': 'logbook.gui.ApplicationMain',
-            'Class-Path': configurations.runtimeClasspath.files.collect { "logbook_lib/${it.name}" }.join(' ')
-        )
-    }
-
-    from(sourceSets.main.output)
-
-    doLast {
-        // ライブラリコピー
-        destLibDir.mkdirs()
-        configurations.runtimeClasspath.each { file ->
-            copy {
-                from file
-                into destLibDir
-            }
         }
     }
 }
