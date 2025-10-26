@@ -73,3 +73,12 @@ sourceSets {
         }
     }
 }
+
+// 記載しておかないと「logbook.jarにメイン・マニフェスト属性がありません」が出る
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'logbook.gui.ApplicationMain'
+        )
+    }
+}

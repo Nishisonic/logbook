@@ -137,6 +137,10 @@ public class CAKeyStore {
             System.out.println("CRTファイルが存在していないためインストールスキップします。");
             return;
         }
+        if (!AppConstants.PKCS12_FILE.exists()) {
+            System.out.println("PKCS12ファイルが存在していないためインストールスキップします。");
+            return;
+        }
 
         if (os.contains("win")) {
             installToWindows();
