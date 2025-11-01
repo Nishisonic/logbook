@@ -78,7 +78,9 @@ sourceSets {
 jar {
     manifest {
         attributes(
-            'Main-Class': 'logbook.gui.ApplicationMain'
+            'Created-By': "Gradle ${gradle.gradleVersion}",
+            'Main-Class': 'logbook.gui.ApplicationMain',
+            'Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "logbook_lib/${it.name}" }.join(' ')
         )
     }
 }
