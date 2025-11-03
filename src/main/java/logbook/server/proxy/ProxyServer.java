@@ -46,6 +46,7 @@ public final class ProxyServer {
 
     public static void start() {
         try {
+            updateSetting();
             MitmManager mitmManager = ImpersonatingMitmManager.builder()
                     .rootCertificateSource(new KeyStoreFileCertificateSource(
                             "PKCS12",
@@ -54,7 +55,6 @@ public final class ProxyServer {
                             AppConstants.PKCS12_PASSWORD))
                     .trustAllServers(isTrustAllServers)
                     .build();
-            updateSetting();
 
             try {
                 InetSocketAddress address = host != null ? new InetSocketAddress(host, port)
