@@ -72,9 +72,13 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
             HttpContent content = (HttpContent) httpObject;
             ByteBuf buf = content.content();
             ByteBuf copied = buf.copy();
-            byte[] bytes = new byte[copied.readableBytes()];
-            copied.readBytes(bytes);
-            this.requestBodyBuffer.write(bytes, 0, bytes.length);
+            try {
+                byte[] bytes = new byte[copied.readableBytes()];
+                copied.readBytes(bytes);
+                this.requestBodyBuffer.write(bytes, 0, bytes.length);
+            } finally {
+                copied.release();
+            }
         }
 
         return null;
@@ -89,9 +93,13 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
             HttpContent content = (HttpContent) httpObject;
             ByteBuf buf = content.content();
             ByteBuf copied = buf.copy();
-            byte[] bytes = new byte[copied.readableBytes()];
-            copied.readBytes(bytes);
-            this.responseBodyBuffer.write(bytes, 0, bytes.length);
+            try {
+                byte[] bytes = new byte[copied.readableBytes()];
+                copied.readBytes(bytes);
+                this.responseBodyBuffer.write(bytes, 0, bytes.length);
+            } finally {
+                copied.release();
+            }
 
             if (httpObject instanceof LastHttpContent) {
                 try {
