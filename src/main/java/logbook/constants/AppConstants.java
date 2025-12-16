@@ -24,7 +24,7 @@ public class AppConstants {
     public static final String SUFFIX = "拡張版";
 
     /** バージョン */
-    public static final String VERSION = "2.5.7.75";
+    public static final String VERSION = "2.5.7.76";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://github.com/Nishisonic/logbook/releases");
@@ -34,7 +34,8 @@ public class AppConstants {
             .create("https://api.github.com/repos/Nishisonic/logbook/releases/latest");
 
     /** マップセル */
-    public static final URI MAP_EDGES_URI = URI.create("https://cdn.jsdelivr.net/gh/KC3Kai/KC3Kai@master/src/data/edges.json");
+    public static final URI MAP_EDGES_URI = URI
+            .create("https://cdn.jsdelivr.net/gh/KC3Kai/KC3Kai@master/src/data/edges.json");
 
     /** 日付書式 */
     public static final String DATE_FORMAT = "yyyy-MM-dd HH:mm:ss";
@@ -113,10 +114,10 @@ public class AppConstants {
     public static final RGB[][] CHART_COLOR_TABLE = new RGB[][] {
             new RGB[] { new RGB(0x00, 0x80, 0x00), new RGB(213, 94, 0) }, // 燃料 赤
             new RGB[] { new RGB(0x66, 0x33, 0x00), new RGB(0, 0, 0) }, // 弾薬 黒
-            new RGB[] { new RGB(0x80, 0x80, 0x80), new RGB(0, 114, 178) }, // 鋼材  青
+            new RGB[] { new RGB(0x80, 0x80, 0x80), new RGB(0, 114, 178) }, // 鋼材 青
             new RGB[] { new RGB(0xCC, 0x33, 0x00), new RGB(86, 180, 233) }, // ボーキ 水色
             new RGB[] { new RGB(0xA5, 0x2A, 0x2A), new RGB(240, 228, 66) }, // バーナー 黄色
-            new RGB[] { new RGB(0xF0, 0x80, 0x80), new RGB(230, 159, 0) }, // バケツ　オレンジ
+            new RGB[] { new RGB(0xF0, 0x80, 0x80), new RGB(230, 159, 0) }, // バケツ オレンジ
             new RGB[] { new RGB(0x48, 0x76, 0xFF), new RGB(0, 158, 115) }, // 開発 緑
             new RGB[] { new RGB(0x00, 0xAB, 0xB2), new RGB(204, 121, 167) } // ネジ 紫
     };
@@ -196,31 +197,31 @@ public class AppConstants {
     /** 文字コード(Shift_JIS) */
     public static final Charset CHARSET = Charset.forName("MS932");
 
-    /** アプリケーション設定ファイル  */
+    /** アプリケーション設定ファイル */
     public static final File APP_CONFIG_FILE = new File("./config/internal.xml");
 
-    /** ユーザーゲームデータファイル  */
+    /** ユーザーゲームデータファイル */
     public static final File USER_DATA_CONFIG = new File("./config/user.xml");
 
-    /** マスターゲームデータ保存ファイル  */
+    /** マスターゲームデータ保存ファイル */
     public static final File MASTER_DATA_CONFIG = new File("./config/master.xml");
 
-    /** 建造ドック設定ファイル  */
+    /** 建造ドック設定ファイル */
     public static final File KDOCK_CONFIG_FILE = new File("./config/kdock.xml");
 
-    /** 所有艦娘グループ設定ファイル  */
+    /** 所有艦娘グループ設定ファイル */
     public static final File GROUP_CONFIG_FILE = new File("./config/group.xml");
 
-    /** 敵データファイル  */
+    /** 敵データファイル */
     public static final File ENEMY_DATA_FILE = new File("./config/EnemyFleetRecord.csv");
 
-    /** 旧敵データファイル  */
+    /** 旧敵データファイル */
     public static final File ENEMY_DATA_OLD_FILE = new File("./config/KCRDB-enemyid.csv");
 
-    /** 艦パラメータファイル  */
+    /** 艦パラメータファイル */
     public static final File SHIP_PARAMETER_FILE = new File("./config/ShipParameterRecord.csv");
 
-    /** スクリプトデータファイル  */
+    /** スクリプトデータファイル */
     public static final File SCRIPT_DATA_FILE = new File("./config/scriptdata.zip");
 
     /** 出撃ログ表示用CSSファイル */
@@ -231,28 +232,28 @@ public class AppConstants {
 
     /** 多重起動検出用 */
     public static final File LOCK_FILE = new File("./config/lock");
-    
+
     public static final String[] KANCOLLE_DOMAIN_LIST = {
-        "w01y.kancolle-server.com", // 横須賀鎮守府
-        "w02k.kancolle-server.com", // 呉鎮守府
-        "w03s.kancolle-server.com", // 佐世保鎮守府
-        "w04m.kancolle-server.com", // 舞鶴鎮守府
-        "w05o.kancolle-server.com", // 大湊警備府
-        "w06t.kancolle-server.com", // トラック泊地
-        "w07l.kancolle-server.com", // リンガ泊地
-        "w08r.kancolle-server.com", // ラバウル基地
-        "w09s.kancolle-server.com", // ショートランド泊地
-        "w10b.kancolle-server.com", // ブイン基地
-        "w11t.kancolle-server.com", // タウイタウイ泊地
-        "w12p.kancolle-server.com", // パラオ泊地
-        "w13b.kancolle-server.com", // ブルネイ泊地
-        "w14h.kancolle-server.com", // 単冠湾泊地
-        "w15p.kancolle-server.com", // 幌筵泊地
-        "w16s.kancolle-server.com", // 宿毛湾泊地
-        "w17k.kancolle-server.com", // 鹿屋基地
-        "w18i.kancolle-server.com", // 岩川基地
-        "w19s.kancolle-server.com", // 佐伯湾泊地
-        "w20h.kancolle-server.com", // 柱島泊地
+            "w01y.kancolle-server.com", // 横須賀鎮守府
+            "w02k.kancolle-server.com", // 呉鎮守府
+            "w03s.kancolle-server.com", // 佐世保鎮守府
+            "w04m.kancolle-server.com", // 舞鶴鎮守府
+            "w05o.kancolle-server.com", // 大湊警備府
+            "w06t.kancolle-server.com", // トラック泊地
+            "w07l.kancolle-server.com", // リンガ泊地
+            "w08r.kancolle-server.com", // ラバウル基地
+            "w09s.kancolle-server.com", // ショートランド泊地
+            "w10b.kancolle-server.com", // ブイン基地
+            "w11t.kancolle-server.com", // タウイタウイ泊地
+            "w12p.kancolle-server.com", // パラオ泊地
+            "w13b.kancolle-server.com", // ブルネイ泊地
+            "w14h.kancolle-server.com", // 単冠湾泊地
+            "w15p.kancolle-server.com", // 幌筵泊地
+            "w16s.kancolle-server.com", // 宿毛湾泊地
+            "w17k.kancolle-server.com", // 鹿屋基地
+            "w18i.kancolle-server.com", // 岩川基地
+            "w19s.kancolle-server.com", // 佐伯湾泊地
+            "w20h.kancolle-server.com", // 柱島泊地
     };
 
     /** 証明書ファイル */
@@ -344,19 +345,19 @@ public class AppConstants {
     /** メッセージ {0} 出撃はできません。 */
     public static final String MESSAGE_BAD = "{0} 出撃はできません。";
 
-    /** メッセージ 出撃中です。  */
+    /** メッセージ 出撃中です。 */
     public static final String MESSAGE_SORTIE = "出撃中です。";
 
     /** メッセージ 連合艦隊に */
     public static final String MESSAGE_IN_COMBINED = "連合艦隊に";
 
-    /** メッセージ 大破している艦娘がいます  */
+    /** メッセージ 大破している艦娘がいます */
     public static final String MESSAGE_BADLY_DAMAGE = "大破している艦娘がいます";
 
-    /** メッセージ 入渠中の艦娘がいます  */
+    /** メッセージ 入渠中の艦娘がいます */
     public static final String MESSAGE_BATHWATER = "入渠中の艦娘がいます";
 
-    /** メッセージ 遠征中です。  */
+    /** メッセージ 遠征中です。 */
     public static final String MESSAGE_MISSION = "遠征中です。";
 
     /** メッセージ 疲労している艦娘がいます */
@@ -389,10 +390,10 @@ public class AppConstants {
     /** メッセージ 艦隊防空値:{0} */
     public static final String MESSAGE_AA = "艦隊防空値:{0}";
 
-    /** メッセージ  航空偵察スコア:{0} */
+    /** メッセージ 航空偵察スコア:{0} */
     public static final String MESSAGE_AVIATION_DETECTION = "航空偵察スコア:{0}";
 
-    /** Push 通知のアプリケーション名*/
+    /** Push 通知のアプリケーション名 */
     public static final String PUSH_NOTIFY_APPNAME = "航海日誌";
 
     /** Prowl のアクセス先 URI */
@@ -410,13 +411,13 @@ public class AppConstants {
     /** LINE Notify API のアクセス先 URI */
     public static final String NOTIFY_LINE_URI = "https://notify-api.line.me/api/notify";
 
-    /** メッセージ  ドラム缶:{0} ({1}隻) */
+    /** メッセージ ドラム缶:{0} ({1}隻) */
     public static final String MESSAGE_TOTAL_DRAM = "ドラム缶:{0} ({1}隻)";
 
-    /** メッセージ  大発:{0} (+{1}%) */
+    /** メッセージ 大発:{0} (+{1}%) */
     public static final String MESSAGE_TOTAL_DAIHATSU = "大発:{0} (+{1}%)";
 
-    /** メッセージ  前回の遠征:{0} (+{1}%) */
+    /** メッセージ 前回の遠征:{0} (+{1}%) */
     public static final String MESSAGE_PREVIOUS_MISSION = "前回の遠征:{0}";
 
     /** タイトルバーに表示するデフォルトテキスト */

@@ -68,18 +68,18 @@ public class CAKeyStore {
         certBuilder.addExtension(Extension.basicConstraints, true, new BasicConstraints(true));
 
         // 5. KeyUsage（KancolleSnifferは指定していなかったので合わせてみる）
-        //    CA認証だとKeyUsage.keyCertSign | KeyUsage.cRLSign
-        //    サーバ認証だとKeyUsage.digitalSignature | KeyUsage.keyEncipherment
+        // CA認証だとKeyUsage.keyCertSign | KeyUsage.cRLSign
+        // サーバ認証だとKeyUsage.digitalSignature | KeyUsage.keyEncipherment
         // certBuilder.addExtension(Extension.keyUsage, true,
-        //         new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign));
+        // new KeyUsage(KeyUsage.keyCertSign | KeyUsage.cRLSign));
 
         // 6. EnhancedKeyUsage（サーバ認証）
-        //    CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
+        // CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
         certBuilder.addExtension(Extension.extendedKeyUsage, false,
                 new ExtendedKeyUsage(KeyPurposeId.id_kp_serverAuth));
 
         // 7. SAN（Subject Alternative Name）
-        //    CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
+        // CA認証なので本来必要ないはずだがKancolleSnifferに合わせてみる
         GeneralName[] names = new GeneralName[AppConstants.KANCOLLE_DOMAIN_LIST.length];
         for (int i = 0; i < AppConstants.KANCOLLE_DOMAIN_LIST.length; i++) {
             names[i] = new GeneralName(GeneralName.dNSName, AppConstants.KANCOLLE_DOMAIN_LIST[i]);
@@ -144,11 +144,9 @@ public class CAKeyStore {
 
         if (os.contains("win")) {
             installToWindows();
-        }
-        else if (os.contains("linux")) {
+        } else if (os.contains("linux")) {
             installToLinux();
-        }
-        else if (os.contains("mac")) {
+        } else if (os.contains("mac")) {
             installToMac();
         }
     }
@@ -164,8 +162,9 @@ public class CAKeyStore {
 
     /**
      * Windows のユーザー信頼ストアにインポート
-     * @throws InterruptedException 
-     * @throws IOException 
+     * 
+     * @throws InterruptedException
+     * @throws IOException
      */
     private static int installToWindows() throws InterruptedException, IOException {
         // Windows 7だとPowershell実行で止まるらしい
@@ -183,8 +182,7 @@ public class CAKeyStore {
         if (existsTrustedRootCertificationAuthorities()) {
             System.out.println("証明書は Windows の信頼されたルート証明機関に登録されているためスキップします。");
             return 0;
-        }
-        else {
+        } else {
             System.out.println("証明書はまだ登録されていません。");
         }
 
@@ -227,8 +225,7 @@ public class CAKeyStore {
         if (os.contains("mac")) {
             command = "security find-certificate -a -c \"" + AppConstants.CN_ALIAS
                     + "\" /Library/Keychains/System.keychain >/dev/null 2>&1";
-        }
-        else {
+        } else {
             command = "openssl verify -CApath /etc/ssl/certs <(openssl x509 -in " + AppConstants.CRT_FILE.getName()
                     + ") >/dev/null 2>&1";
         }
@@ -239,15 +236,15 @@ public class CAKeyStore {
 
     /**
      * Linux のシステムCAストアにインポート
-     * @throws IOException 
-     * @throws InterruptedException 
+     * 
+     * @throws IOException
+     * @throws InterruptedException
      */
     private static int installToLinux() throws IOException, InterruptedException {
         if (existsSystemTrustedRootCertificate()) {
             System.out.println("証明書は Linux のシステムCAに登録されているためスキップします。");
             return 0;
-        }
-        else {
+        } else {
             System.out.println("証明書はまだ登録されていません。");
         }
 
@@ -265,6 +262,7 @@ public class CAKeyStore {
 
     /**
      * Mac のシステムCAストアにインポート
+     * 
      * @return
      * @throws InterruptedException
      * @throws IOException
@@ -273,8 +271,7 @@ public class CAKeyStore {
         if (existsSystemTrustedRootCertificate()) {
             System.out.println("証明書は Mac のシステムCAに登録されているためスキップします。");
             return 0;
-        }
-        else {
+        } else {
             System.out.println("証明書はまだ登録されていません。");
         }
 
@@ -284,7 +281,7 @@ public class CAKeyStore {
         String importCommand = String.format(
                 "osascript -e 'do shell script \"security import %s -k /Library/Keychains/System.keychain -P %s -A\" with administrator privileges'",
                 AppConstants.PKCS12_FILE,
-                "your_password");
+                AppConstants.PKCS12_PASSWORD);
         result += new ProcessBuilder("bash", "-c", importCommand)
                 .inheritIO()
                 .start()
