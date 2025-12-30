@@ -279,8 +279,8 @@ public class CAKeyStore {
 
         // (1) .p12 をキーチェーンにインポート
         String importCommand = String.format(
-                "osascript -e 'do shell script \"security import %s -k /Library/Keychains/System.keychain -P %s -A\" with administrator privileges'",
-                AppConstants.PKCS12_FILE,
+                "osascript -e 'do shell script \"security import \\\"%s\\\" -k /Library/Keychains/System.keychain -P \\\"%s\\\" -A\" with administrator privileges'",
+                AppConstants.PKCS12_FILE.getAbsolutePath(),
                 AppConstants.PKCS12_PASSWORD);
         result += new ProcessBuilder("bash", "-c", importCommand)
                 .inheritIO()
@@ -289,8 +289,8 @@ public class CAKeyStore {
 
         // (2) ルート証明書として信頼設定（CRTファイルを併用）
         String trustCommand = String.format(
-                "osascript -e 'do shell script \"security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain %s\" with administrator privileges'",
-                AppConstants.CRT_FILE);
+                "osascript -e 'do shell script \"security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain \\\"%s\\\"\" with administrator privileges'",
+                AppConstants.CRT_FILE.getAbsolutePath());
         result += new ProcessBuilder("bash", "-c", trustCommand)
                 .inheritIO()
                 .start()
