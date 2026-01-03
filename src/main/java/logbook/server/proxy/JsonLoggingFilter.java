@@ -145,7 +145,7 @@ public class JsonLoggingFilter extends HttpFiltersAdapter {
                             }
 
                             // TsunDB(https://tsundb.kc3.moe/api/)に送信する
-                            TsunDBClient.send(data);
+                            TsunDBClient.send(serverName, data);
                         }
                     } catch (Exception e) {
                         LOG.get().warn("受信データ処理に失敗", e);

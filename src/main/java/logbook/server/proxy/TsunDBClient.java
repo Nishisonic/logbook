@@ -11,6 +11,7 @@ import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -100,8 +101,11 @@ public class TsunDBClient extends Thread {
         return instance;
     }
 
-    public static void send(Data data) {
+    public static void send(String serverName, Data data) {
         if (!AppConfig.get().isSendTsunDB())
+            return;
+        // 私設サーバー対策
+        if (!Arrays.asList(AppConstants.KANCOLLE_DOMAIN_LIST).contains(serverName))
             return;
         switch (data.getDataType()) {
         case START:
