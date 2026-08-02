@@ -243,6 +243,7 @@ public final class AsyncExecApplicationMain extends Thread {
         private final List<String> noticeNdock = new ArrayList<String>();
         private final List<String> noticeCond = new ArrayList<String>();
         private final List<String> noticeAkashi = new ArrayList<String>();
+        private final List<String> noticeNosaki = new ArrayList<String>();
         private final Date now = new Date();
         private static final ZoneId TIME_ZONE = ZoneId.of("Asia/Tokyo");
 
@@ -321,6 +322,17 @@ public final class AsyncExecApplicationMain extends Thread {
                     }
                 }
 
+                // 母港給糧通知
+                if (this.noticeNosaki.size() > 0) {
+                    Sound.randomNosakiSoundPlay();
+
+                    // Push通知 母港給糧
+                    if (AppConfig.get().isPushNosaki()) {
+                        PushNotify.add(StringUtils.join(this.noticeNosaki, "\r\n"), "母港給糧",
+                                AppConfig.get().getPushPriorityNosaki());
+                    }
+                }
+
                 if (visibleHome) {
                     this.main.getTabFolder().setSelection(0);
                 }
@@ -335,6 +347,7 @@ public final class AsyncExecApplicationMain extends Thread {
                         this.addNotice(notice, title, this.noticeNdock, "入渠");
                         this.addNotice(notice, title, this.noticeCond, "疲労回復");
                         this.addNotice(notice, title, this.noticeAkashi, "泊地修理");
+                        this.addNotice(notice, title, this.noticeNosaki, "母港給糧");
                         if (notice.size() > 0) {
                             ToolTip tip = new ToolTip(this.main.getShell(), SWT.BALLOON
                                     | SWT.ICON_INFORMATION);
@@ -444,6 +457,12 @@ public final class AsyncExecApplicationMain extends Thread {
             }
         }
 
+        private void updateNoticeNosaki(DockDto dock, NosakiTimer.SupplyState supplyState) {
+            if (this.main.getNosakiNotice().getSelection() && supplyState.isReadyNotify()) {
+                this.noticeNosaki.add(dock.getName() + " は母港に戻るとcondが回復します");
+            }
+        }
+
         /**
          * 遠征を更新する
          *
@@ -523,6 +542,14 @@ public final class AsyncExecApplicationMain extends Thread {
                             this.updateNoticeCond(dockName, i, condRest);
                         }
 
+                        // 母港給糧艦タイマー更新
+                        // 泊地修理と併用できるので表示の勝ち負けとは無関係に通知は生成する
+                        NosakiTimer.SupplyState supplyState = TimerContext.get().getNosakiSupplyState(i);
+                        boolean isSupplying = (supplyState != null) && supplyState.isSupplying();
+                        if (isSupplying) {
+                            this.updateNoticeNosaki(dock, supplyState);
+                        }
+
                         // 泊地修理タイマー更新
                         AkashiTimer.RepairState repairState = TimerContext.get().getAkashiRepairState(i);
                         if (repairState.isRepairing()) {
@@ -554,6 +581,26 @@ public final class AsyncExecApplicationMain extends Thread {
                             }
 
                             this.updateNoticeAkashi(dock, repairState);
+                        }
+                        else if (isSupplying) {
+                            // 母港給糧中
+                            // 明石の泊地修理表示と同じく、経過時間をそのまま表示し続ける(発動後も止めない)
+                            dispname = dockName + " (母港給糧中)";
+                            backColor = ColorManager.getColor(AppConstants.NOSAKI_SUPPLY_COLOR);
+                            time = TimeLogic.toDateRestString(supplyState.getElapsed() / 1000, true);
+
+                            // ツールチップで詳細表示
+                            for (NosakiTimer.ShipState state : supplyState.get()) {
+                                if (state != null) {
+                                    String txt = state.getShip().getFriendlyName() + ":cond+" + state.getGain();
+                                    if (tooltip == null) {
+                                        tooltip = txt;
+                                    }
+                                    else {
+                                        tooltip += "\n" + txt;
+                                    }
+                                }
+                            }
                         }
                         else if (!GlobalContext.isSortie(dock.getId()) && (condClearTime != null)) {
                             dispname = dockName + " (疲労回復中)";
@@ -699,6 +746,24 @@ public final class AsyncExecApplicationMain extends Thread {
                 akashiTimerText.setText(time);
                 akashiTimerText.setToolTipText(null);
                 akashiTimerText.setBackground(ColorManager.getColor(AppConstants.AKASHI_REPAIR_COLOR));
+            }
+
+            // 母港給糧タイマー
+            Text nosakiTimerText = this.main.getNosakiTimerTime();
+
+            NosakiTimer nosakiTimer = GlobalContext.getNosakiTimer();
+            if (nosakiTimer.getStartTime() == null) {
+                // 不明
+                nosakiTimerText.setText("???");
+                nosakiTimerText.setToolTipText("十分な情報がありません");
+                nosakiTimerText.setBackground(ColorManager.getColor(SWT.COLOR_WHITE));
+            }
+            else {
+                long elapsed = this.now.getTime() - nosakiTimer.getStartTime().getTime();
+                String time = TimeLogic.toDateRestString(elapsed / 1000, true);
+                nosakiTimerText.setText(time);
+                nosakiTimerText.setToolTipText(null);
+                nosakiTimerText.setBackground(ColorManager.getColor(AppConstants.NOSAKI_SUPPLY_COLOR));
             }
         }
 

@@ -133,6 +133,14 @@ public final class Sound {
     }
 
     /**
+     * 母港給糧が可能になった時に再生するサウンドを再生します
+     *
+     */
+    public static void randomNosakiSoundPlay() {
+        randomPlay(getFileList("./sound/nosaki"));
+    }
+
+    /**
      * 疲労が回復した時に再生するサウンドを再生します
      * 
      */

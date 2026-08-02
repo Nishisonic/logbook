@@ -13,7 +13,7 @@ import java.util.Map;
  */
 public class ExpTable {
 
-    public static final int MAX_LEVEL = 185;
+    public static final int MAX_LEVEL = 188;
 
     /**
      * 経験値テーブルプリセット値
@@ -205,6 +205,9 @@ public class ExpTable {
             this.put(183, 14200000);
             this.put(184, 15000000);
             this.put(185, 16000000);
+            this.put(186, 17200000);
+            this.put(187, 18600000);
+            this.put(188, 20200000);
         }
     };
 

@@ -266,6 +266,8 @@ public final class ApplicationMain extends WindowBase {
     private Button ndockNotice;
     /** 泊地修理通知 */
     private Button akashiNotice;
+
+    private Button nosakiNotice;
     /** 疲労通知 */
     private Button condNotice;
 
@@ -316,6 +318,10 @@ public final class ApplicationMain extends WindowBase {
     private Composite akashiTimerGroup;
     private Label akashiTimerLabel;
     private Text akashiTimerTime;
+
+    private Composite nosakiTimerGroup;
+    private Label nosakiTimerLabel;
+    private Text nosakiTimerTime;
 
     /** 戦果 **/
     private Composite resultRecordGroup;
@@ -402,9 +408,13 @@ public final class ApplicationMain extends WindowBase {
             this.restoreWindows();
             sysPrint("メッセージループに入ります...");
             while (!this.shell.isDisposed()) {
-                if (!display.readAndDispatch()) {
-                    display.sleep();
-
+                try {
+                    if (!display.readAndDispatch()) {
+                        display.sleep();
+                    }
+                } catch (Throwable e) {
+                    // SWT/OS側の描画処理で例外が発生することがあるが、アプリ全体を落とさず継続する
+                    LOG.get().warn("イベント処理でエラーが発生しました", e);
                 }
             }
             this.subwindowHost.dispose();
@@ -869,6 +879,16 @@ public final class ApplicationMain extends WindowBase {
             }
         });
 
+        this.nosakiNotice = new Button(this.notifySettingGroup, SWT.CHECK);
+        this.nosakiNotice.setSelection(AppConfig.get().isNoticeNosaki());
+        this.nosakiNotice.setText("母港給糧");
+        this.nosakiNotice.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                AppConfig.get().setNoticeNosaki(ApplicationMain.this.nosakiNotice.getSelection());
+            }
+        });
+
         this.condNotice = new Button(this.notifySettingGroup, SWT.CHECK);
         this.condNotice.setSelection(AppConfig.get().isNoticeCond());
         this.condNotice.setText("疲労");
@@ -986,6 +1006,20 @@ public final class ApplicationMain extends WindowBase {
         GridData gdakashiTimerTime = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
         gdakashiTimerTime.widthHint = SwtUtils.DPIAwareWidth(75);
         this.akashiTimerTime.setLayoutData(gdakashiTimerTime);
+
+        this.nosakiTimerGroup = new Composite(this.mainComposite, SWT.NONE);
+        this.nosakiTimerGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.nosakiTimerGroup.setLayout(SwtUtils.makeGridLayout(2, 1, 1, 3, 3));
+
+        this.nosakiTimerLabel = new Label(this.nosakiTimerGroup, SWT.NONE);
+        this.nosakiTimerLabel.setText("母港給糧タイマー");
+        this.nosakiTimerLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        this.nosakiTimerTime = new Text(this.nosakiTimerGroup, SWT.SINGLE | SWT.BORDER);
+        this.nosakiTimerTime.setText("母港給糧タイマーの経過時間");
+        GridData gdnosakiTimerTime = new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1);
+        gdnosakiTimerTime.widthHint = SwtUtils.DPIAwareWidth(75);
+        this.nosakiTimerTime.setLayoutData(gdnosakiTimerTime);
 
         this.condTimerGroup = new Composite(this.mainComposite, SWT.NONE);
         this.condTimerGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -1108,6 +1142,10 @@ public final class ApplicationMain extends WindowBase {
         MenuItem showAkashiTimer = new MenuItem(this.getPopupMenu(), SWT.CHECK);
         showAkashiTimer.setText("泊地修理タイマーを表示");
         this.bindControlToMenuItem(this.akashiTimerGroup, showAkashiTimer, "ShowAkashiGlobalTimer");
+
+        MenuItem showNosakiTimer = new MenuItem(this.getPopupMenu(), SWT.CHECK);
+        showNosakiTimer.setText("母港給糧タイマーを表示");
+        this.bindControlToMenuItem(this.nosakiTimerGroup, showNosakiTimer, "ShowNosakiGlobalTimer");
 
         MenuItem showCondTimer = new MenuItem(this.getPopupMenu(), SWT.CHECK);
         showCondTimer.setText("疲労タイマーを表示");
@@ -1506,6 +1544,7 @@ public final class ApplicationMain extends WindowBase {
                 this.deckNotice, this.ndockNotice,
                 this.deck1time, this.deck2time, this.deck3time, this.deck4time,
                 this.akashiTimerTime,
+                this.nosakiTimerTime,
                 this.ndock1time, this.ndock2time, this.ndock3time, this.ndock4time,
                 this.condTimerTime,
                 this.console }) {
@@ -2064,6 +2103,13 @@ public final class ApplicationMain extends WindowBase {
     }
 
     /**
+     * @return nosakiNotice
+     */
+    public Button getNosakiNotice() {
+        return this.nosakiNotice;
+    }
+
+    /**
      * @return condNotice
      */
     public Button getCondNotice() {
@@ -2210,6 +2256,14 @@ public final class ApplicationMain extends WindowBase {
 
     public Text getAkashiTimerTime() {
         return this.akashiTimerTime;
+    }
+
+    public Label getNosakiTimerLabel() {
+        return this.nosakiTimerLabel;
+    }
+
+    public Text getNosakiTimerTime() {
+        return this.nosakiTimerTime;
     }
 
     public Label getResultRecordLabel() {

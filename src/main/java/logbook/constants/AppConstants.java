@@ -24,7 +24,7 @@ public class AppConstants {
     public static final String SUFFIX = "拡張版";
 
     /** バージョン */
-    public static final String VERSION = "2.5.7.78";
+    public static final String VERSION = "2.5.7.79";
 
     /** ホームページ */
     public static final URI HOME_PAGE_URI = URI.create("https://github.com/Nishisonic/logbook/releases");
@@ -161,6 +161,12 @@ public class AppConstants {
 
     /** 泊地中理中 */
     public static final RGB AKASHI_REPAIR_COLOR = new RGB(168, 211, 255);
+
+    /** 母港給糧中(疲労回復の色に合わせる) */
+    public static final RGB NOSAKI_SUPPLY_COLOR = COND_WAITING;
+
+    /** 機銃・バルジ等の装備数表示 */
+    public static final RGB NOSAKI_SUPPLY_PURPLE = new RGB(106, 27, 154);
 
     /** テーブル行(偶数行)背景色 */
     public static final RGB ROW_BACKGROUND = new RGB(246, 246, 246);

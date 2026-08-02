@@ -45,6 +45,9 @@ public final class AppConfigBean {
     /** 母港タブの泊地修理タイマー表示 */
     private boolean showAkashiGlobalTimer = true;
 
+    /** 母港タブの母港給糧艦タイマー表示 */
+    private boolean showNosakiGlobalTimer = true;
+
     /** 母港タブの疲労度タイマー表示 */
     private boolean showCondCycleTimer = true;
 
@@ -132,6 +135,9 @@ public final class AppConfigBean {
     /** 泊地修理Push通知のPriority */
     private int PushPriorityAkashi = 0;
 
+    /** 母港給糧Push通知のPriority */
+    private int PushPriorityNosaki = 0;
+
     /** 疲労Push通知のPriority */
     private int PushPriorityCond = 0;
 
@@ -143,6 +149,9 @@ public final class AppConfigBean {
 
     /** 泊地修理完了時にPush通知する */
     private boolean PushAkashi = true;
+
+    /** 母港給糧が可能になった時にPush通知する */
+    private boolean PushNosaki = true;
 
     /**　疲労完了時にPush通知する */
     private boolean PushCond = true;
@@ -194,6 +203,9 @@ public final class AppConfigBean {
 
     /** 泊地修理完了時に通知する */
     private boolean noticeAkashi = true;
+
+    /** 母港給糧が可能になった時に通知する */
+    private boolean noticeNosaki = true;
 
     /** 疲労回復時に通知する */
     private boolean noticeCond = true;
@@ -251,6 +263,12 @@ public final class AppConfigBean {
 
     /** 泊地修理タイマー表示形式 */
     private int akashiTimerFormat = 0;
+
+    /** 母港給糧艦タイマーを表示する */
+    private boolean showNosakiTimer = true;
+
+    /** 母港給糧艦タイマー表示形式 */
+    private int nosakiTimerFormat = 0;
 
     /** 回数を表示 */
     private boolean displayCount;
@@ -568,6 +586,20 @@ public final class AppConfigBean {
      */
     public void setShowAkashiGlobalTimer(boolean showAkashiGlobalTimer) {
         this.showAkashiGlobalTimer = showAkashiGlobalTimer;
+    }
+
+    /**
+     * @return showNosakiGlobalTimer
+     */
+    public boolean isShowNosakiGlobalTimer() {
+        return this.showNosakiGlobalTimer;
+    }
+
+    /**
+     * @param showNosakiGlobalTimer セットする showNosakiGlobalTimer
+     */
+    public void setShowNosakiGlobalTimer(boolean showNosakiGlobalTimer) {
+        this.showNosakiGlobalTimer = showNosakiGlobalTimer;
     }
 
     /**
@@ -919,6 +951,20 @@ public final class AppConfigBean {
     }
 
     /**
+     * @return pushNosaki
+     */
+    public boolean isPushNosaki() {
+        return this.PushNosaki;
+    }
+
+    /**
+     * @param pushNosaki セットする pushNosaki
+     */
+    public void setPushNosaki(boolean pushNosaki) {
+        this.PushNosaki = pushNosaki;
+    }
+
+    /**
      * @return pushCond
      */
     public boolean isPushCond() {
@@ -972,6 +1018,20 @@ public final class AppConfigBean {
      */
     public void setPushPriorityAkashi(int pushPriorityAkashi) {
         this.PushPriorityAkashi = pushPriorityAkashi;
+    }
+
+    /**
+     * @return pushPriorityNosaki
+     */
+    public int getPushPriorityNosaki() {
+        return this.PushPriorityNosaki;
+    }
+
+    /**
+     * @param pushPriorityNosaki セットする pushPriorityNosaki
+     */
+    public void setPushPriorityNosaki(int pushPriorityNosaki) {
+        this.PushPriorityNosaki = pushPriorityNosaki;
     }
 
     /**
@@ -1220,6 +1280,20 @@ public final class AppConfigBean {
      */
     public void setNoticeAkashi(boolean noticeAkashi) {
         this.noticeAkashi = noticeAkashi;
+    }
+
+    /**
+     * @return noticeNosaki
+     */
+    public boolean isNoticeNosaki() {
+        return this.noticeNosaki;
+    }
+
+    /**
+     * @param noticeNosaki セットする noticeNosaki
+     */
+    public void setNoticeNosaki(boolean noticeNosaki) {
+        this.noticeNosaki = noticeNosaki;
     }
 
     /**
@@ -2127,6 +2201,34 @@ public final class AppConfigBean {
      */
     public void setAkashiTimerFormat(int akashiTimerFormat) {
         this.akashiTimerFormat = akashiTimerFormat;
+    }
+
+    /**
+     * @return showNosakiTimer
+     */
+    public boolean isShowNosakiTimer() {
+        return this.showNosakiTimer;
+    }
+
+    /**
+     * @param showNosakiTimer セットする showNosakiTimer
+     */
+    public void setShowNosakiTimer(boolean showNosakiTimer) {
+        this.showNosakiTimer = showNosakiTimer;
+    }
+
+    /**
+     * @return nosakiTimerFormat
+     */
+    public int getNosakiTimerFormat() {
+        return this.nosakiTimerFormat;
+    }
+
+    /**
+     * @param nosakiTimerFormat セットする nosakiTimerFormat
+     */
+    public void setNosakiTimerFormat(int nosakiTimerFormat) {
+        this.nosakiTimerFormat = nosakiTimerFormat;
     }
 
     /**

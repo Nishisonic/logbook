@@ -605,6 +605,24 @@ public final class ConfigDialog extends Dialog {
         akashiFormatCombo.add("C.AとBを交互に表示");
         akashiFormatCombo.select(AppConfig.get().getAkashiTimerFormat());
 
+        final Button showNosakiTimer = new Button(compositeFleetDetail, SWT.CHECK);
+        showNosakiTimer.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
+        showNosakiTimer.setText("母港給糧タイマーを表示");
+        showNosakiTimer.setSelection(AppConfig.get().isShowNosakiTimer());
+
+        Composite nosakiFormatBase = new Composite(compositeFleetDetail, SWT.NONE);
+        nosakiFormatBase.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        nosakiFormatBase.setLayout(new RowLayout(SWT.HORIZONTAL));
+
+        Label nosakiFormatLabel = new Label(nosakiFormatBase, SWT.NONE);
+        nosakiFormatLabel.setText("表示");
+
+        final Combo nosakiFormatCombo = new Combo(nosakiFormatBase, SWT.READ_ONLY);
+        nosakiFormatCombo.add("A.cond54までの時間");
+        nosakiFormatCombo.add("B.次の給糧までの時間");
+        nosakiFormatCombo.add("C.AとBを交互に表示");
+        nosakiFormatCombo.select(AppConfig.get().getNosakiTimerFormat());
+
         final Button showStrikingForceFleet = new Button(compositeFleetDetail, SWT.CHECK);
         showStrikingForceFleet.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 1, 1));
         showStrikingForceFleet.setText("遊撃部隊分を表示");
@@ -972,6 +990,7 @@ public final class ConfigDialog extends Dialog {
                 "遠征帰投を通知",
                 "入渠完了を通知",
                 "泊地修理完了を通知",
+                "母港給糧が可能になったのを通知",
                 "疲労回復を通知"
         };
 
@@ -981,23 +1000,28 @@ public final class ConfigDialog extends Dialog {
         final Combo pushPriorityNdockCombo = new Combo(compositePushNotify, SWT.READ_ONLY);
         final Button pushNotifyAkashi = new Button(compositePushNotify, SWT.CHECK);
         final Combo pushPriorityAkashiCombo = new Combo(compositePushNotify, SWT.READ_ONLY);
+        final Button pushNotifyNosaki = new Button(compositePushNotify, SWT.CHECK);
+        final Combo pushPriorityNosakiCombo = new Combo(compositePushNotify, SWT.READ_ONLY);
         final Button pushNotifyCond = new Button(compositePushNotify, SWT.CHECK);
         final Combo pushPriorityCondCombo = new Combo(compositePushNotify, SWT.READ_ONLY);
 
         Button[] pushNotifyButtons = new Button[] {
-                pushNotifyMission, pushNotifyNdock, pushNotifyAkashi, pushNotifyCond };
+                pushNotifyMission, pushNotifyNdock, pushNotifyAkashi, pushNotifyNosaki, pushNotifyCond };
         Combo[] pushNotifyCombos = new Combo[] {
-                pushPriorityMissionCombo, pushPriorityNdockCombo, pushPriorityAkashiCombo, pushPriorityCondCombo };
+                pushPriorityMissionCombo, pushPriorityNdockCombo, pushPriorityAkashiCombo, pushPriorityNosakiCombo,
+                pushPriorityCondCombo };
         boolean[] pushEnabled = new boolean[] {
                 AppConfig.get().getPushMission(),
                 AppConfig.get().getPushNdock(),
                 AppConfig.get().isPushAkashi(),
+                AppConfig.get().isPushNosaki(),
                 AppConfig.get().isPushCond()
         };
         int[] pushPriorities = new int[] {
                 AppConfig.get().getPushPriorityMission(),
                 AppConfig.get().getPushPriorityNdock(),
                 AppConfig.get().getPushPriorityAkashi(),
+                AppConfig.get().getPushPriorityNosaki(),
                 AppConfig.get().getPushPriorityCond()
         };
 
@@ -1227,6 +1251,8 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setShowCondTimer(showCondTimer.getSelection());
                 AppConfig.get().setShowAkashiTimer(showAkashiTimer.getSelection());
                 AppConfig.get().setAkashiTimerFormat(akashiFormatCombo.getSelectionIndex());
+                AppConfig.get().setShowNosakiTimer(showNosakiTimer.getSelection());
+                AppConfig.get().setNosakiTimerFormat(nosakiFormatCombo.getSelectionIndex());
                 AppConfig.get().setShowStrikingForceFleet(showStrikingForceFleet.getSelection());
                 AppConfig.get().setSeikuMethod(seikuCombo.getSelectionIndex());
                 AppConfig.get().setSakutekiMethodV4(sakutekiCombo.getSelectionIndex());
@@ -1294,10 +1320,12 @@ public final class ConfigDialog extends Dialog {
                 AppConfig.get().setPushMission(pushNotifyMission.getSelection());
                 AppConfig.get().setPushNdock(pushNotifyNdock.getSelection());
                 AppConfig.get().setPushAkashi(pushNotifyAkashi.getSelection());
+                AppConfig.get().setPushNosaki(pushNotifyNosaki.getSelection());
                 AppConfig.get().setPushCond(pushNotifyCond.getSelection());
                 AppConfig.get().setPushPriorityMission(pushPriorityMissionCombo.getSelectionIndex() - 2);
                 AppConfig.get().setPushPriorityNdock(pushPriorityNdockCombo.getSelectionIndex() - 2);
                 AppConfig.get().setPushPriorityAkashi(pushPriorityAkashiCombo.getSelectionIndex() - 2);
+                AppConfig.get().setPushPriorityNosaki(pushPriorityNosakiCombo.getSelectionIndex() - 2);
                 AppConfig.get().setPushPriorityCond(pushPriorityCondCombo.getSelectionIndex() - 2);
 
                 // ツールウィンドウ

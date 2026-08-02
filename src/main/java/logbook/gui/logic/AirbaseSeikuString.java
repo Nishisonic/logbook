@@ -15,8 +15,8 @@ public class AirbaseSeikuString {
     private static int[][] alevelBonusTable = new int[][] {
             { 0, 0, 2, 5, 9, 14, 14, 22 }, // 艦上戦闘機、水上戦闘機、夜間戦闘機
             { 0, 0, 0, 0, 0, 0, 0, 0 }, // 艦上爆撃機、艦上攻撃機、噴式戦闘爆撃機、陸上偵察機
-            { 0, 0, 1, 1, 1, 3, 3, 6 }, // 水上爆撃機
-            { 0, 0, 2, 5, 9, 14, 14, 22 }, // 一式戦 隼II型改(20戦隊)、一式戦 隼III型改(熟練/20戦隊)
+            { 0, 1, 1, 1, 1, 3, 3, 6 }, // 水上爆撃機
+            { 0, 0, 2, 5, 9, 14, 14, 22 }, // 対空値を持つ対潜哨戒機(一式戦 隼II型改(20戦隊)等)
     };
 
     private static int[] internalAlevelTable = new int[] {
@@ -32,7 +32,7 @@ public class AirbaseSeikuString {
             switch (squadron.getType2()) {
             case 6: // 艦上戦闘機、夜間戦闘機
             case 45: // 水上戦闘機
-                // case 56: // 噴式戦闘機
+            case 56: // 噴式戦闘機
                 base = (squadron.getParam().getTaiku() + 0.2 * squadron.getLevel()) * Math.sqrt(squadron.getCount());
                 constSkilledBonus = alevelBonusTable[0][squadron.getAlv()];
                 skilledBonus = new int[] { internalAlevelTable[squadron.getAlv()],
@@ -77,9 +77,8 @@ public class AirbaseSeikuString {
                 break;
             case 25: // オートジャイロ
                 return new AirPower(0, 0);
-            case 26: // 対潜哨戒機
-                if (squadron.getSlotitemId() == 489 || squadron.getSlotitemId() == 491) {
-                    // 一式戦 隼II型改(20戦隊)、一式戦 隼III型改(熟練/20戦隊)
+            case 26: // 対潜哨戒機(対空値を持つもののみ制空値を計算する)
+                if (squadron.getParam().getTaiku() > 0) {
                     base = squadron.getParam().getTaiku() * Math.sqrt(squadron.getCount());
                     constSkilledBonus = alevelBonusTable[3][squadron.getAlv()];
                     skilledBonus = new int[] { internalAlevelTable[squadron.getAlv()],
@@ -141,7 +140,7 @@ public class AirbaseSeikuString {
             switch (squadron.getType2()) {
             case 6: // 艦上戦闘機、夜間戦闘機
             case 45: // 水上戦闘機
-                // case 56: // 噴式戦闘機
+            case 56: // 噴式戦闘機
                 base = (squadron.getParam().getTaiku() + 0.2 * squadron.getLevel()) * Math.sqrt(squadron.getCount());
                 constSkilledBonus = alevelBonusTable[0][squadron.getAlv()];
                 skilledBonus = new int[] { internalAlevelTable[squadron.getAlv()],
@@ -186,9 +185,8 @@ public class AirbaseSeikuString {
                 break;
             case 25: // オートジャイロ
                 return new AirPower(0, 0);
-            case 26: // 対潜哨戒機
-                if (squadron.getSlotitemId() == 489 || squadron.getSlotitemId() == 491) {
-                    // 一式戦 隼II型改(20戦隊)、一式戦 隼III型改(熟練/20戦隊)
+            case 26: // 対潜哨戒機(対空値を持つもののみ制空値を計算する)
+                if (squadron.getParam().getTaiku() > 0) {
                     base = squadron.getParam().getTaiku() * Math.sqrt(squadron.getCount());
                     constSkilledBonus = alevelBonusTable[3][squadron.getAlv()];
                     skilledBonus = new int[] { internalAlevelTable[squadron.getAlv()],

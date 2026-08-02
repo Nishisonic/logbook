@@ -226,7 +226,9 @@ public class CAKeyStore {
             command = "security find-certificate -a -c \"" + AppConstants.CN_ALIAS
                     + "\" /Library/Keychains/System.keychain >/dev/null 2>&1";
         } else {
-            command = "openssl verify -CApath /etc/ssl/certs <(openssl x509 -in " + AppConstants.CRT_FILE.getName()
+            // ディレクトリの階層が異なるため、絶対パスで指定
+            command = "openssl verify -CApath /etc/ssl/certs <(openssl x509 -in "
+                    + AppConstants.CRT_FILE.getAbsolutePath()
                     + ") >/dev/null 2>&1";
         }
 
@@ -255,7 +257,8 @@ public class CAKeyStore {
             return 0;
         }
 
-        String command = "pkexec bash -c 'cp " + AppConstants.CRT_FILE
+        // カレントディレクトリが変わるため、絶対パスで指定
+        String command = "pkexec bash -c 'cp " + AppConstants.CRT_FILE.getAbsolutePath()
                 + " /usr/local/share/ca-certificates/ && update-ca-certificates'";
         return new ProcessBuilder("bash", "-c", command).inheritIO().start().waitFor();
     }

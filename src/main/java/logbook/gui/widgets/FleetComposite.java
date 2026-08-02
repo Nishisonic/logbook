@@ -48,6 +48,7 @@ import logbook.gui.logic.TPString;
 import logbook.gui.logic.TimeLogic;
 import logbook.gui.logic.TimeString;
 import logbook.internal.AkashiTimer;
+import logbook.internal.NosakiTimer;
 import logbook.internal.CondTiming;
 import logbook.internal.EvaluateExp;
 import logbook.internal.LoggerHolder;
@@ -131,8 +132,8 @@ public class FleetComposite extends Composite {
     private final Label[] aaLabels = new Label[MAXCHARA];
     /** レベリング  */
     private final Label[] nextLabels = new Label[MAXCHARA];
-    /** 泊地修理 or 疲労回復 */
-    private final Label[] timeLabels = new Label[MAXCHARA];
+    /** 泊地修理 or 疲労回復(明石+野崎併用時に部分的に色分けするためStyledText) */
+    private final StyledText[] timeLabels = new StyledText[MAXCHARA];
     /** メッセージ */
     private final StyledText message;
 
@@ -240,9 +241,18 @@ public class FleetComposite extends Composite {
             Label aa = new Label(stateComposite, SWT.NONE);
             SwtUtils.initLabel(aa, "対空", new GridData());
             Label next = new Label(stateComposite, SWT.NONE);
-            SwtUtils.initLabel(next, "next", new GridData());
-            Label time = new Label(stateComposite, SWT.NONE);
-            SwtUtils.initLabel(time, "time", new GridData());
+            GridData nextGd = SwtUtils.initLabel(next, "next", new GridData());
+
+            // 明石+野崎併用時に部分的に色分けできるようStyledTextを使う(単色時はLabelと同じ見た目にする)
+            StyledText time = new StyledText(stateComposite, SWT.READ_ONLY);
+            time.setEditable(false);
+            time.setCaret(null);
+            time.setBackground(stateComposite.getBackground());
+            time.setFont(next.getFont());
+            time.setText("time");
+            GridData timeGd = new GridData();
+            timeGd.heightHint = nextGd.heightHint;
+            time.setLayoutData(timeGd);
 
             // 疲労
             Label cond = new Label(downsideBase, SWT.NONE);
@@ -339,6 +349,9 @@ public class FleetComposite extends Composite {
         CondTiming condTiming = GlobalContext.getCondTiming();
         AkashiTimer.RepairState repairState = TimerContext.get().getAkashiRepairState(dockIndex);
         List<AkashiTimer.ShipState> repairShips = repairState.isRepairing() ? repairState.get() : null;
+        NosakiTimer.SupplyState supplyState = TimerContext.get().getNosakiSupplyState(dockIndex);
+        List<NosakiTimer.ShipState> supplyShips = ((supplyState != null) && supplyState.isSupplying())
+                ? supplyState.get() : null;
         boolean isSortie = GlobalContext.isSortie(dock.getId());
         Map<Integer, Date> ndockMap = GlobalContext.getNDockCompleteTimeMap();
         DeckMissionDto currentMission = (dockIndex == 0) ? null : GlobalContext.getDeckMissions()[dockIndex - 1];
@@ -614,7 +627,7 @@ public class FleetComposite extends Composite {
             }
 
             this.dmgcLabels[i].setText(dmgcstr);
-            this.dmgcLabels[i].setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
+            this.dmgcLabels[i].setForeground(ColorManager.getColor(AppConstants.NOSAKI_SUPPLY_PURPLE));
 
             // 対空項目
             String aaString = "";
@@ -653,11 +666,25 @@ public class FleetComposite extends Composite {
 
             // 残り修理時間/疲労回復までの時間/ダメコン表示
             Runnable updator = null;
-            final Label timeLabel = this.timeLabels[i];
+            final StyledText timeLabel = this.timeLabels[i];
             boolean isRepairing = (repairShips != null) && (repairShips.get(i) != null);
-            if (isRepairing && AppConfig.get().isShowAkashiTimer()) {
+            boolean isSupplying = (supplyShips != null) && (i < supplyShips.size()) && (supplyShips.get(i) != null);
+            boolean showAkashi = isRepairing && AppConfig.get().isShowAkashiTimer();
+            boolean showNosaki = isSupplying && AppConfig.get().isShowNosakiTimer();
+            // 母港給糧艦の効果対象艦は常に給糧情報を優先表示するが、通常疲労回復の情報も
+            // ツールチップに追記する(自然回復は給糧と無関係に並行して進むため)
+            Date nosakiCondInfoDate = (!isSortie && AppConfig.get().isShowCondTimer()) ? condClearDate : null;
+            if (showAkashi && showNosaki) {
+                // 泊地修理と母港給糧艦の効果対象が重複
+                updator = new CombinedTimerUpdator(timeLabel, dockIndex, i, nosakiCondInfoDate, condTiming);
+            }
+            else if (showAkashi) {
                 // 泊地修理中
                 updator = new AkashiTimerUpdator(timeLabel, dockIndex, i);
+            }
+            else if (showNosaki) {
+                // 母港給糧艦の効果対象
+                updator = new NosakiTimerUpdator(timeLabel, dockIndex, i, nosakiCondInfoDate, condTiming);
             }
             else if (!isSortie && (condClearDate != null) && AppConfig.get().isShowCondTimer()) {
                 updator = new Runnable() {
@@ -1085,16 +1112,147 @@ public class FleetComposite extends Composite {
     }
 
     /**
+     * 泊地修理の表示テキストとツールチップを作成する
+     * @return [0]表示テキスト [1]ツールチップ
+     */
+    private static String[] akashiText(Date now, AkashiTimer.ShipState state, boolean showRemain) {
+        if (now.before(state.getFinish())) {
+            String reststr = TimeLogic.toDateRestString(TimeLogic.getRest(now, state.getFinish()), true);
+            String nextstr = TimeLogic.toDateRestString(state.getNext() / 1000, true);
+            String str = showRemain ? ("修理あと" + reststr) : ("次回復まで" + nextstr);
+            String tip = "現在までに+" + state.getCurrentGain() + "回復\n" +
+                    "次の回復まで" + nextstr + "\n" +
+                    "全回復まで" + reststr +
+                    "(" + format.format(state.getFinish()) + ")";
+            return new String[] { str, tip };
+        }
+        return new String[] { "修理まもなく完了", null };
+    }
+
+    /** 自然回復の上限(以降は野埼のみでcond54まで積み上がる) */
+    private static final int NATURAL_COND_CAP = 49;
+
+    /**
+     * 通常疲労の自然回復(3分毎に+3、上限49)と母港給糧(15分毎に+power、上限54)を
+     * 時系列でマージしたシミュレーションで、cond54に到達するまでの時間を計算する
+     * @param now 基準時刻
+     * @param condTiming 疲労回復タイミング推定
+     * @param startCond 現在のcond値
+     * @param power 母港給糧1回あたりの上昇量
+     * @param firstNosakiDelay 次回の母港給糧発動までの時間(ms)
+     * @return cond54に到達するまでの時間(ms)
+     */
+    private static long timeToReachCap(Date now, CondTiming condTiming, int startCond, int power,
+            long firstNosakiDelay) {
+        int cond = startCond;
+        long natMs = Long.MAX_VALUE;
+        if (cond < NATURAL_COND_CAP) {
+            Date natDate = condTiming.getNextUpdateTime(now);
+            if (natDate != null) {
+                natMs = natDate.getTime() - now.getTime();
+            }
+        }
+        long nosMs = firstNosakiDelay;
+
+        long t = 0;
+        int guard = 0;
+        while ((cond < NosakiTimer.MAX_SUPPLY_COND) && (guard++ < 200)) {
+            if (natMs <= nosMs) {
+                t = natMs;
+                if (cond < NATURAL_COND_CAP) {
+                    cond = Math.min(NATURAL_COND_CAP, cond + 3);
+                }
+                if (cond < NATURAL_COND_CAP) {
+                    Date natDate = condTiming.getNextUpdateTime(new Date(now.getTime() + natMs));
+                    natMs = (natDate != null) ? (natDate.getTime() - now.getTime()) : Long.MAX_VALUE;
+                }
+                else {
+                    natMs = Long.MAX_VALUE; // 自然回復は上限に達したので以降は寄与しない
+                }
+            }
+            else {
+                t = nosMs;
+                cond = Math.min(NosakiTimer.MAX_SUPPLY_COND, cond + power);
+                nosMs += NosakiTimer.SUPPLY_INTERVAL;
+            }
+        }
+        return t;
+    }
+
+    /**
+     * 母港給糧艦の表示テキストとツールチップを作成する
+     * @return [0]表示テキスト [1]ツールチップ
+     */
+    private static String[] nosakiText(Date now, CondTiming condTiming, NosakiTimer.SupplyState supplyState,
+            NosakiTimer.ShipState state, boolean showCapTime) {
+        int gain = state.getGain();
+        int power = supplyState.getPower();
+        int currentCond = state.getShip().getCond();
+        long firstNosakiDelay = supplyState.getNext();
+
+        boolean lastNosakiCycle = (NosakiTimer.MAX_SUPPLY_COND - currentCond) <= power;
+        if ((firstNosakiDelay <= 0) && lastNosakiCycle) {
+            // 時間が経過済みで、かつ今回の給糧でcond54に到達する場合は完了表示にする
+            return new String[] { "給糧まもなく完了", null };
+        }
+
+        long totalRemain = timeToReachCap(now, condTiming, currentCond, power, firstNosakiDelay);
+        Date capDate = new Date(now.getTime() + totalRemain);
+        String capReststr = TimeLogic.toDateRestString(totalRemain / 1000, true);
+        String nextstr = TimeLogic.toDateRestString(firstNosakiDelay / 1000, true);
+
+        // A: 明石の「修理あと」相当でcond54に到達するまでの時間 / B: 次の給糧までの時間
+        String str = showCapTime ? ("給糧あと" + capReststr) : ("次の給糧まで" + nextstr);
+
+        // 母港給糧は明石の泊地修理と違って連続的には増えず、発動した瞬間に一括で+gainされる
+        int currentGain = (firstNosakiDelay <= 0) ? gain : 0;
+        String tip = "現在までにcond+" + currentGain + "回復\n" +
+                "次の給糧まで" + nextstr + "\n" +
+                "cond" + NosakiTimer.MAX_SUPPLY_COND + "まで" + capReststr +
+                "(" + format.format(capDate) + ")";
+        return new String[] { str, tip };
+    }
+
+    /**
+     * 通常疲労回復のツールチップ用テキストを作成する(給糧と無関係に自然回復は並行して進むため)
+     * @param condClearDate 疲労回復見込み時刻。表示不要な場合はnull
+     * @return ツールチップに追記する行。追記不要な場合はnull
+     */
+    private static String condInfoTip(Date condClearDate) {
+        if (condClearDate == null) {
+            return null;
+        }
+        long rest = TimeLogic.getRest(new Date(), condClearDate);
+        String reststr = TimeLogic.toDateRestString(rest);
+        if (reststr != null) {
+            return "通常疲労回復まで" + reststr + "(" + format.format(condClearDate) + ")";
+        }
+        return "疲労まもなく回復";
+    }
+
+    /**
+     * @param tip 元のツールチップ(null可)
+     * @param extra 追記する行(null可)
+     * @return 結合したツールチップ。両方nullならnull
+     */
+    private static String appendTip(String tip, String extra) {
+        if (extra == null) {
+            return tip;
+        }
+        return (tip != null ? tip + "\n\n" : "") + extra;
+    }
+
+    /**
      * 泊地修理タイマー表示を更新する
      * @author Nekopanda
      */
     private static class AkashiTimerUpdator implements Runnable {
-        private final Label label;
+        private final StyledText label;
         private final int dockIndex;
         private final int dockPosition;
         private int showCount = 0;
 
-        public AkashiTimerUpdator(Label l, int i, int p) {
+        public AkashiTimerUpdator(StyledText l, int i, int p) {
             this.label = l;
             this.dockIndex = i;
             this.dockPosition = p;
@@ -1111,36 +1269,21 @@ public class FleetComposite extends Composite {
                 if (repairState.isRepairing()) {
                     AkashiTimer.ShipState state = repairState.get().get(this.dockPosition);
                     if (state != null) {
-                        if (now.before(state.getFinish())) {
-                            String reststr = TimeLogic
-                                    .toDateRestString(TimeLogic.getRest(now, state.getFinish()), true);
-                            String nextstr = TimeLogic.toDateRestString(state.getNext() / 1000, true);
-                            boolean showRemain;
-                            switch (AppConfig.get().getAkashiTimerFormat()) {
-                            case 1:
-                                showRemain = false;
-                                break;
-                            case 2:
-                                showRemain = ((this.showCount++ / 4) % 2) == 0;
-                                break;
-                            default:
-                                showRemain = true;
-                                break;
-                            }
-                            if (showRemain) {
-                                str = "修理あと" + reststr;
-                            }
-                            else {
-                                str = "次回復まで" + nextstr;
-                            }
-                            tip = "現在までに+" + state.getCurrentGain() + "回復\n" +
-                                    "次の回復まで" + nextstr + "\n" +
-                                    "全回復まで" + reststr +
-                                    "(" + format.format(state.getFinish()) + ")";
+                        boolean showRemain;
+                        switch (AppConfig.get().getAkashiTimerFormat()) {
+                        case 1:
+                            showRemain = false;
+                            break;
+                        case 2:
+                            showRemain = ((this.showCount++ / 4) % 2) == 0;
+                            break;
+                        default:
+                            showRemain = true;
+                            break;
                         }
-                        else {
-                            str = "修理まもなく完了";
-                        }
+                        String[] info = akashiText(now, state, showRemain);
+                        str = info[0];
+                        tip = info[1];
                     }
                 }
 
@@ -1150,6 +1293,181 @@ public class FleetComposite extends Composite {
                 this.label.getParent().layout();
             } catch (Exception e) {
                 LOG.get().warn("泊地修理更新でエラー", e);
+            }
+        }
+    }
+
+    /**
+     * 母港給糧艦タイマー表示を更新する
+     */
+    private static class NosakiTimerUpdator implements Runnable {
+        private final StyledText label;
+        private final int dockIndex;
+        private final int dockPosition;
+        private final Date condClearDate;
+        private final CondTiming condTiming;
+        private int showCount = 0;
+
+        public NosakiTimerUpdator(StyledText l, int i, int p, Date condClearDate, CondTiming condTiming) {
+            this.label = l;
+            this.dockIndex = i;
+            this.dockPosition = p;
+            this.condClearDate = condClearDate;
+            this.condTiming = condTiming;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String str = "";
+                String tip = null;
+
+                Date now = TimerContext.get().getLastUpdated();
+                NosakiTimer.SupplyState supplyState = TimerContext.get().getNosakiSupplyState(this.dockIndex);
+                if ((supplyState != null) && supplyState.isSupplying()
+                        && (this.dockPosition < supplyState.get().size())) {
+                    NosakiTimer.ShipState state = supplyState.get().get(this.dockPosition);
+                    if (state != null) {
+                        boolean showCapTime;
+                        switch (AppConfig.get().getNosakiTimerFormat()) {
+                        case 1:
+                            showCapTime = false;
+                            break;
+                        case 2:
+                            showCapTime = ((this.showCount++ / 4) % 2) == 0;
+                            break;
+                        default:
+                            showCapTime = true;
+                            break;
+                        }
+                        String[] info = nosakiText(now, this.condTiming, supplyState, state, showCapTime);
+                        str = info[0];
+                        tip = appendTip(info[1], condInfoTip(this.condClearDate));
+                    }
+                }
+
+                this.label.setText(str);
+                this.label.setToolTipText(tip);
+                this.label.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN));
+                this.label.getParent().layout();
+            } catch (Exception e) {
+                LOG.get().warn("母港給糧艦更新でエラー", e);
+            }
+        }
+    }
+
+    /**
+     * 泊地修理と母港給糧艦の効果対象が重複する艦娘の表示を更新する
+     */
+    private static class CombinedTimerUpdator implements Runnable {
+        private final StyledText label;
+        private final int dockIndex;
+        private final int dockPosition;
+        private final Date condClearDate;
+        private final CondTiming condTiming;
+        private int showCount = 0;
+        private int nosakiShowCount = 0;
+
+        public CombinedTimerUpdator(StyledText l, int i, int p, Date condClearDate, CondTiming condTiming) {
+            this.label = l;
+            this.dockIndex = i;
+            this.dockPosition = p;
+            this.condClearDate = condClearDate;
+            this.condTiming = condTiming;
+        }
+
+        @Override
+        public void run() {
+            try {
+                String[] akashiInfo = null;
+                String[] nosakiInfo = null;
+
+                Date now = TimerContext.get().getLastUpdated();
+                AkashiTimer.RepairState repairState = TimerContext.get().getAkashiRepairState(this.dockIndex);
+                if (repairState.isRepairing() && (this.dockPosition < repairState.get().size())) {
+                    AkashiTimer.ShipState state = repairState.get().get(this.dockPosition);
+                    if (state != null) {
+                        boolean showRemain;
+                        switch (AppConfig.get().getAkashiTimerFormat()) {
+                        case 1:
+                            showRemain = false;
+                            break;
+                        case 2:
+                            showRemain = ((this.showCount++ / 4) % 2) == 0;
+                            break;
+                        default:
+                            showRemain = true;
+                            break;
+                        }
+                        akashiInfo = akashiText(now, state, showRemain);
+                    }
+                }
+
+                NosakiTimer.SupplyState supplyState = TimerContext.get().getNosakiSupplyState(this.dockIndex);
+                if ((supplyState != null) && supplyState.isSupplying()
+                        && (this.dockPosition < supplyState.get().size())) {
+                    NosakiTimer.ShipState state = supplyState.get().get(this.dockPosition);
+                    if (state != null) {
+                        boolean showCapTime;
+                        switch (AppConfig.get().getNosakiTimerFormat()) {
+                        case 1:
+                            showCapTime = false;
+                            break;
+                        case 2:
+                            showCapTime = ((this.nosakiShowCount++ / 4) % 2) == 0;
+                            break;
+                        default:
+                            showCapTime = true;
+                            break;
+                        }
+                        nosakiInfo = nosakiText(now, this.condTiming, supplyState, state, showCapTime);
+                    }
+                }
+
+                String str;
+                String tip;
+                if ((akashiInfo != null) && (nosakiInfo != null)) {
+                    // 重複時はどちらの情報か分かるように見出しを付けて縦に並べる
+                    str = akashiInfo[0] + " " + nosakiInfo[0];
+                    tip = "【泊地修理】\n" + (akashiInfo[1] != null ? akashiInfo[1] : akashiInfo[0]) + "\n\n"
+                            + "【母港給糧】\n" + (nosakiInfo[1] != null ? nosakiInfo[1] : nosakiInfo[0]);
+                    tip = appendTip(tip, condInfoTip(this.condClearDate));
+                }
+                else if (akashiInfo != null) {
+                    str = akashiInfo[0];
+                    tip = akashiInfo[1];
+                }
+                else if (nosakiInfo != null) {
+                    str = nosakiInfo[0];
+                    tip = appendTip(nosakiInfo[1], condInfoTip(this.condClearDate));
+                }
+                else {
+                    str = "";
+                    tip = null;
+                }
+
+                this.label.setText(str);
+                this.label.setToolTipText(tip);
+                if ((akashiInfo != null) && (nosakiInfo != null)) {
+                    // 重複時は泊地修理部分を青、母港給糧部分を緑で塗り分ける
+                    StyleRange akashiStyle = new StyleRange();
+                    akashiStyle.start = 0;
+                    akashiStyle.length = akashiInfo[0].length();
+                    akashiStyle.foreground = SWTResourceManager.getColor(SWT.COLOR_DARK_BLUE);
+                    this.label.setStyleRange(akashiStyle);
+
+                    StyleRange nosakiStyle = new StyleRange();
+                    nosakiStyle.start = akashiInfo[0].length() + " ".length();
+                    nosakiStyle.length = nosakiInfo[0].length();
+                    nosakiStyle.foreground = SWTResourceManager.getColor(SWT.COLOR_DARK_GREEN);
+                    this.label.setStyleRange(nosakiStyle);
+                }
+                else {
+                    this.label.setForeground(SWTResourceManager.getColor(SWT.COLOR_DARK_BLUE));
+                }
+                this.label.getParent().layout();
+            } catch (Exception e) {
+                LOG.get().warn("泊地修理・母港給糧更新でエラー", e);
             }
         }
     }

@@ -73,6 +73,7 @@ import logbook.gui.ApplicationMain;
 import logbook.gui.logic.CreateReportLogic;
 import logbook.gui.logic.Sound;
 import logbook.internal.AkashiTimer;
+import logbook.internal.NosakiTimer;
 import logbook.internal.BattleResultServer;
 import logbook.internal.CondTiming;
 import logbook.internal.Item;
@@ -196,6 +197,9 @@ public final class GlobalContext {
     /** 泊地修理タイマー */
     private static AkashiTimer akashiTimer = new AkashiTimer();
 
+    /** 母港給糧艦タイマー */
+    private static NosakiTimer nosakiTimer = new NosakiTimer();
+
     /** 戦果 */
     private static ResultRecord resultRecord = new ResultRecord();
 
@@ -263,6 +267,8 @@ public final class GlobalContext {
         }
         Date akashiStartTime = config.getAkashiStartTime();
         GlobalContext.akashiTimer.setStartTime(akashiStartTime);
+        Date nosakiStartTime = config.getNosakiStartTime();
+        GlobalContext.nosakiTimer.setStartTime(nosakiStartTime);
         GlobalContext.resultRecord = Optional.ofNullable(config.getResultRecord()).orElse(new ResultRecord());
     }
 
@@ -641,6 +647,13 @@ public final class GlobalContext {
      */
     public static AkashiTimer getAkashiTimer() {
         return akashiTimer;
+    }
+
+    /**
+     * @return nosakiTimer
+     */
+    public static NosakiTimer getNosakiTimer() {
+        return nosakiTimer;
     }
 
     public static ResultRecord getResultRecord() {
@@ -1089,6 +1102,13 @@ public final class GlobalContext {
         return false;
     }
 
+    private static boolean isNosakiFleet(DockDto dock) {
+        if (dock != null) {
+            return dock.isFlagshipOrSecondShipNosaki();
+        }
+        return false;
+    }
+
     /**
      * 基地航空隊を取得
      * @return airbase
@@ -1193,6 +1213,13 @@ public final class GlobalContext {
                     // 泊地修理判定
                     if (isFlagshipAkashi(dockdto) || isFlagshipAkashi(rdock)) {
                         akashiTimer.reset();
+                    }
+
+                    // 母港給糧艦判定
+                    // 野埼が旗艦・2番艦にいる艦隊の編成が変わるとタイマーはやり直しになる
+                    // (旗艦以外一括解除とプリセット展開はリセットされないのでここには来ない)
+                    if (isNosakiFleet(dockdto) || isNosakiFleet(rdock)) {
+                        nosakiTimer.reset();
                     }
                 }
 
@@ -1337,6 +1364,10 @@ public final class GlobalContext {
                         akashiTimer.reset();
                     }
                 }
+
+                // 母港給糧艦タイマー更新
+                // 15分経過後に母港へ戻った時点で給糧が発動するので、その場合は次の15分を数え直す
+                nosakiTimer.enterPort();
 
                 JsonArray apiDeckPort = apidata.getJsonArray("api_deck_port");
                 doDeck(apiDeckPort);

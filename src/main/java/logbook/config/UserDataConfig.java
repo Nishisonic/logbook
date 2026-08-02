@@ -30,6 +30,8 @@ public class UserDataConfig {
 
     private Date akashiStartTime;
 
+    private Date nosakiStartTime;
+
     private ResultRecord resultRecord;
 
     /**
@@ -41,6 +43,7 @@ public class UserDataConfig {
         config.previousMissions = GlobalContext.getPreviousMissions();
         config.condTiming = GlobalContext.getCondTiming().getUpdateTiming();
         config.akashiStartTime = GlobalContext.getAkashiTimer().getStartTime();
+        config.nosakiStartTime = GlobalContext.getNosakiTimer().getStartTime();
         config.resultRecord = GlobalContext.getResultRecord();
         BeanUtils.writeObject(AppConstants.USER_DATA_CONFIG, config);
     }
@@ -116,6 +119,20 @@ public class UserDataConfig {
      */
     public void setAkashiStartTime(Date akashiStartTime) {
         this.akashiStartTime = akashiStartTime;
+    }
+
+    /**
+     * @return nosakiStartTime
+     */
+    public Date getNosakiStartTime() {
+        return nosakiStartTime;
+    }
+
+    /**
+     * @param nosakiStartTime セットする nosakiStartTime
+     */
+    public void setNosakiStartTime(Date nosakiStartTime) {
+        this.nosakiStartTime = nosakiStartTime;
     }
 
     public ResultRecord getResultRecord() {

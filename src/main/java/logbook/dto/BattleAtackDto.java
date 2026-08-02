@@ -691,6 +691,14 @@ public class BattleAtackDto {
                                 return "B";
                             case 8:
                                 return "A";
+                            case 56: // 噴式戦闘機
+                                return "JF";
+                            case 57: // 噴式戦闘爆撃機
+                                return "JB";
+                            case 58: // 噴式攻撃機
+                                return "JA";
+                            case 59: // 噴式偵察機
+                                return "JR";
                             }
                         }
                         return "?";

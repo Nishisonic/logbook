@@ -18,8 +18,8 @@ public class SeikuString implements Comparable<SeikuString> {
     private static int[][] alevelBonusTable = new int[][] {
             { 0, 0, 2, 5, 9, 14, 14, 22 }, // 艦上戦闘機、水上戦闘機、夜間戦闘機
             { 0, 0, 0, 0, 0, 0, 0, 0 }, // 艦上爆撃機、艦上攻撃機、噴式戦闘爆撃機、陸上偵察機
-            { 0, 0, 1, 1, 1, 3, 3, 6 }, // 水上爆撃機
-            { 0, 0, 2, 5, 9, 14, 14, 22 }, // 一式戦 隼II型改(20戦隊)、一式戦 隼III型改(熟練/20戦隊)
+            { 0, 1, 1, 1, 1, 3, 3, 6 }, // 水上爆撃機
+            { 0, 0, 2, 5, 9, 14, 14, 22 }, // 対空値を持つ対潜哨戒機(一式戦 隼II型改(20戦隊)等)
     };
 
     private static int[] internalAlevelTable = new int[] {
@@ -59,6 +59,7 @@ public class SeikuString implements Comparable<SeikuString> {
                 switch (item.getType2()) {
                 case 6: // 艦上戦闘機、夜間戦闘機
                 case 45: // 水上戦闘機
+                case 56: // 噴式戦闘機
                     type = 0;
                     break;
                 case 7: // 艦上爆撃機
@@ -69,13 +70,11 @@ public class SeikuString implements Comparable<SeikuString> {
                 case 11: // 水上爆撃機
                     type = 2;
                     break;
+                case 26: // 対潜哨戒機(対空値を持つもののみ制空値を計算する)
+                    type = item.getParam().getTyku() > 0 ? 3 : -1;
+                    break;
                 default:
-                    // 一式戦 隼II型改(20戦隊)、一式戦 隼III型改(熟練/20戦隊)
-                    if (item.getSlotitemId() == 489 || item.getSlotitemId() == 491) {
-                        type = 3;
-                    } else {
-                        type = -1;
-                    }
+                    type = -1;
                     break;
                 }
 
