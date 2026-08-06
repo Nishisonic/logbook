@@ -1,6 +1,6 @@
 Copy-Item ..\build\libs\logbook.jar logbook.jar -Force
 
-$targets = @("win-x64-ex", "win-x86-ex", "macosx-x64-ex", "maxosx-aarch64-ex", "linux-x64-ex", "linux-x86-ex", "linux-aarch64-ex")
+$targets = @("win-x64-ex", "win-x86-ex", "macosx-x64-ex", "macosx-aarch64-ex", "linux-x64-ex", "linux-x86-ex", "linux-aarch64-ex")
 
 foreach ($t in $targets) {
     $dest = ".\$t"

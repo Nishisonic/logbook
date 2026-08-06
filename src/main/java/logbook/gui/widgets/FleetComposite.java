@@ -1190,14 +1190,12 @@ public class FleetComposite extends Composite {
         int currentCond = state.getShip().getCond();
         long firstNosakiDelay = supplyState.getNext();
 
-        boolean lastNosakiCycle = (NosakiTimer.MAX_SUPPLY_COND - currentCond) <= power;
-        if ((firstNosakiDelay <= 0) && lastNosakiCycle) {
-            // 時間が経過済みで、かつ今回の給糧でcond54に到達する場合は完了表示にする
-            return new String[] { "給糧まもなく完了", null };
-        }
-
         long totalRemain = timeToReachCap(now, condTiming, currentCond, power, firstNosakiDelay);
         Date capDate = new Date(now.getTime() + totalRemain);
+        if (!now.before(capDate)) {
+            // 明石の「修理まもなく完了」と同じく、cond54への到達見込み時刻を過ぎている場合は完了表示にする
+            return new String[] { "給糧まもなく完了", null };
+        }
         String capReststr = TimeLogic.toDateRestString(totalRemain / 1000, true);
         String nextstr = TimeLogic.toDateRestString(firstNosakiDelay / 1000, true);
 

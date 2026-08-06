@@ -590,9 +590,16 @@ public final class AsyncExecApplicationMain extends Thread {
                             time = TimeLogic.toDateRestString(supplyState.getElapsed() / 1000, true);
 
                             // ツールチップで詳細表示
+                            String nosakiRemainStr = TimeLogic.toDateRestString(supplyState.getNext() / 1000);
                             for (NosakiTimer.ShipState state : supplyState.get()) {
                                 if (state != null) {
-                                    String txt = state.getShip().getFriendlyName() + ":cond+" + state.getGain();
+                                    String txt = state.getShip().getFriendlyName();
+                                    if (nosakiRemainStr == null) {
+                                        txt += ":まもなく給糧完了します(cond+" + state.getGain() + ")";
+                                    }
+                                    else {
+                                        txt += ":cond+" + state.getGain();
+                                    }
                                     if (tooltip == null) {
                                         tooltip = txt;
                                     }
