@@ -26,44 +26,57 @@ repositories {
 }
 
 dependencies {
-    implementation name: 'annotation'                           // @CheckForNullのタグ付用
-    implementation name: 'bcpkix-jdk15on-1.68'                  // 証明書作成用
-    implementation name: 'bcprov-jdk15on-1.68'                  // 証明書作成用
-    implementation name: 'browsermob-dist-2.1.4'                // HTTPS通信用
-    implementation name: 'commons-codec-1.15'                   // 汎用
-    implementation name: 'commons-io-2.11.0'                    // 汎用
-    implementation name: 'commons-lang3-3.12.0'                 // 汎用
-    implementation name: 'commons-logging-1.2'                  // 汎用
-    implementation name: 'javax.json-1.0'                       // JSON処理用
-    implementation name: 'jintellitype-1.3.9'                   // ショートカットキー用
-    implementation name: 'littleproxy-1.1.2-littleproxy-shade'  // HTTPS通信用
-    implementation name: 'log4j-api-2.17.1'                     // ログ用
-    implementation name: 'log4j-core-2.17.1'                    // ログ用
-    implementation name: 'opencsv-2.3'                          // CSV処理用
-    implementation name: 'protostuff-api-1.0.7'                 // 報告書のタグ付用
-    implementation name: 'protostuff-collectionschema-1.0.7'    // 報告書のタグ付用
-    implementation name: 'protostuff-core-1.0.7'                // 報告書のタグ付用
-    implementation name: 'protostuff-runtime-1.0.7'             // 報告書のタグ付用
-    implementation name: 'swt'                                  // 描画用
-    // Arm64 : https://archive.eclipse.org/eclipse/downloads/drops4/R-4.20-202106111600/
-    // x86_64: https://archive.eclipse.org/eclipse/downloads/drops4/R-4.6.2-201611241400/
+    implementation ':annotation'                           // @CheckForNullのタグ付用
+    implementation ':bcpkix-jdk15on-1.68'                  // 証明書作成用
+    implementation ':bcprov-jdk15on-1.68'                  // 証明書作成用
+    implementation ':browsermob-dist-2.1.4'                // HTTPS通信用
+    implementation ':commons-codec-1.15'                   // 汎用
+    implementation ':commons-io-2.11.0'                    // 汎用
+    implementation ':commons-lang3-3.12.0'                 // 汎用
+    implementation ':commons-logging-1.2'                  // 汎用
+    implementation ':javax.json-1.0'                       // JSON処理用
+    implementation ':jintellitype-1.3.9'                   // ショートカットキー用
+    implementation ':littleproxy-1.1.2-littleproxy-shade'  // HTTPS通信用
+    implementation ':log4j-api-2.17.1'                     // ログ用
+    implementation ':log4j-core-2.17.1'                    // ログ用
+    implementation ':opencsv-2.3'                          // CSV処理用
+    implementation ':protostuff-api-1.0.7'                 // 報告書のタグ付用
+    implementation ':protostuff-collectionschema-1.0.7'    // 報告書のタグ付用
+    implementation ':protostuff-core-1.0.7'                // 報告書のタグ付用
+    implementation ':protostuff-runtime-1.0.7'             // 報告書のタグ付用
+    // 描画用（Maven Centralから取得。旧lib/swt.jar(2016年ビルド)は未使用）
+    // Arm64: org.eclipse.platform:org.eclipse.swt.win32.win32.aarch64
+    implementation 'org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.134.0'
+    // JavaScriptエンジン(Nashorn)。Java15でJDK本体から削除されたため外部依存として追加
+    implementation 'org.openjdk.nashorn:nashorn-core:15.7'
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 application {
     // Define the main class for the application.
     mainClass = 'logbook.gui.ApplicationMain'
+    // browsermob-dist/littleproxyが内包する古いNettyがJDK16+の強いカプセル化に
+    // 抵触して起動時にInaccessibleObjectExceptionを起こすため、reflectionを許可する
+    applicationDefaultJvmArgs = [
+        '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
+        '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',
+        '--add-opens', 'java.base/jdk.internal.misc=ALL-UNNAMED',
+    ]
+}
+
+run {
+    jvmArgs = application.applicationDefaultJvmArgs
 }
 
 sourceSets {
@@ -80,7 +93,17 @@ jar {
         attributes(
             'Created-By': "Gradle ${gradle.gradleVersion}",
             'Main-Class': 'logbook.gui.ApplicationMain',
-            'Class-Path': '. ' + configurations.runtimeClasspath.files.collect { "logbook_lib/${it.name}" }.join(' ')
+            // dest/compress.ps1 は各OS向けSWTを常に "swt.jar" という名前で logbook_lib に配置するため、
+            // Mavenから解決される実ファイル名(例: org.eclipse.swt.win32.win32.x86_64-3.134.0.jar)ではなく
+            // "swt.jar" に読み替える
+            'Class-Path': '. ' + configurations.runtimeClasspath.files.collect {
+                def name = it.name.startsWith('org.eclipse.swt.') ? 'swt.jar' : it.name
+                "logbook_lib/${name}"
+            }.join(' '),
+            // browsermob-dist/littleproxyが内包する古いNettyがJDK16+の強いカプセル化に
+            // 抵触して起動時にInaccessibleObjectExceptionを起こすため、reflectionを許可する
+            // (java -jar 直接起動するmacOS/Linux版はvmargを指定する launcher が無いためここで指定する)
+            'Add-Opens': 'java.base/java.nio java.base/sun.nio.ch java.base/jdk.internal.misc'
         )
     }
 }

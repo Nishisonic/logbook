@@ -48,7 +48,6 @@ import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -281,7 +280,7 @@ public final class ResourceChartDialog extends WindowBase {
             GC gc = new GC(check);
             Point textExtent = gc.stringExtent(text);
             gc.dispose();
-            Image image = new Image(check.getDisplay(), new Rectangle(0, 0, textExtent.x, textExtent.y));
+            Image image = new Image(check.getDisplay(), textExtent.x, textExtent.y);
             GC gcImage = new GC(image);
             gcImage.setBackground(check.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             gcImage.setForeground(ColorManager.getColor(colors[i]));

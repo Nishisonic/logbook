@@ -143,7 +143,6 @@ public final class FullScreenDialog extends Dialog {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public void mouseMove(MouseEvent e) {
             if ((e.stateMask & SWT.BUTTON1) != 0) {
                 GC gc = new GC(this);
