@@ -37,14 +37,19 @@ dependencies {
     implementation 'commons-logging:commons-logging:1.4.0' // 汎用
     implementation 'org.glassfish:javax.json:1.1.4'        // JSON処理用
     implementation 'com.melloware:jintellitype:1.4.1'      // ショートカットキー用
-    implementation ':littleproxy-1.1.2-littleproxy-shade'  // HTTPS通信用
+    // HTTPS通信用（旧org.littleshoot系littleproxy 1.1.2は開発終了のため後継のio.github.littleproxyへ移行、
+    // Netty 4.2系を採用しているためJDK16+の--add-opens回避が不要になる可能性がある）
+    implementation 'io.github.littleproxy:littleproxy:2.8.0'
     implementation 'org.apache.logging.log4j:log4j-api:2.26.1' // ログ用
     implementation 'org.apache.logging.log4j:log4j-core:2.26.1' // ログ用
-    implementation ':opencsv-2.3'                          // CSV処理用
-    implementation ':protostuff-api-1.0.7'                 // 報告書のタグ付用
-    implementation ':protostuff-collectionschema-1.0.7'    // 報告書のタグ付用
-    implementation ':protostuff-core-1.0.7'                // 報告書のタグ付用
-    implementation ':protostuff-runtime-1.0.7'             // 報告書のタグ付用
+    implementation 'com.opencsv:opencsv:5.12.0'            // CSV処理用
+    // 報告書のタグ付用
+    // NOTE: io.protostuff:*:1.8.0への移行を試したが、既存のbattlelog/*.dat(古いcom.dyuproject版で
+    // 書き出したデータ)の一部がProtostuffException: Corrupt inputで読めなくなったため見送り、1.0.7に戻した
+    implementation ':protostuff-api-1.0.7'
+    implementation ':protostuff-collectionschema-1.0.7'
+    implementation ':protostuff-core-1.0.7'
+    implementation ':protostuff-runtime-1.0.7'
     // 描画用（Maven Centralから取得。旧lib/swt.jar(2016年ビルド)は未使用）
     // Arm64: org.eclipse.platform:org.eclipse.swt.win32.win32.aarch64
     implementation 'org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.134.0'
@@ -69,6 +74,8 @@ application {
     mainClass = 'logbook.gui.ApplicationMain'
     // browsermob-dist/littleproxyが内包する古いNettyがJDK16+の強いカプセル化に
     // 抵触して起動時にInaccessibleObjectExceptionを起こすため、reflectionを許可する
+    // littleproxy(Netty)がダイレクトバッファへのUnsafeアクセスにリフレクションを使うため、
+    // Nettyのバージョンによらず必要(JDK16+のデフォルトの強いカプセル化に対する一般的な要件)
     applicationDefaultJvmArgs = [
         '--add-opens', 'java.base/java.nio=ALL-UNNAMED',
         '--add-opens', 'java.base/sun.nio.ch=ALL-UNNAMED',

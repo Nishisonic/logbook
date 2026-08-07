@@ -22,10 +22,12 @@ import logbook.dto.BattleExDto;
 import logbook.dto.ShipInfoDto;
 import logbook.gui.ApplicationMain;
 
+import com.opencsv.exceptions.CsvException;
+
 import org.apache.commons.lang3.StringUtils;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
 
 import com.dyuproject.protostuff.Tag;
 
@@ -47,7 +49,7 @@ public class EnemyData {
     static {
         try {
             load();
-        } catch (IOException e) {
+        } catch (IOException | CsvException e) {
             LOG.get().warn("e_idと敵艦隊の対応ファイル読み込みに失敗しました", e);
         }
         INIT_COMPLETE = true;
@@ -128,7 +130,8 @@ public class EnemyData {
         if (modified) {
             try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(new BufferedOutputStream(
                     new FileOutputStream(AppConstants.ENEMY_DATA_FILE)), AppConstants.CHARSET),
-                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER)) {
+                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END)) {
                 List<String> flatten = new ArrayList<String>();
                 writer.writeNext(getHeader());
                 for (Entry<Integer, EnemyData> e : ENEMY.entrySet()) {
@@ -182,13 +185,13 @@ public class EnemyData {
                         modified = true;
                     }
                 }
-            } catch (IOException e) {
+            } catch (IOException | CsvException e) {
                 LOG.get().warn("旧敵データファイル読み込み失敗", e);
             }
         }
     }
 
-    public static void load() throws IOException {
+    public static void load() throws IOException, CsvException {
         if (AppConstants.ENEMY_DATA_FILE.exists()) {
             try (CSVReader reader = new CSVReader(new InputStreamReader(
                     new FileInputStream(AppConstants.ENEMY_DATA_FILE), AppConstants.CHARSET))) {

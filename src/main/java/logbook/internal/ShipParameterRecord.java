@@ -23,8 +23,9 @@ import logbook.dto.ShipBaseDto;
 import logbook.dto.ShipDto;
 import logbook.dto.ShipInfoDto;
 import logbook.gui.ApplicationMain;
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
+import com.opencsv.CSVReader;
+import com.opencsv.CSVWriter;
+import com.opencsv.exceptions.CsvException;
 
 /**
  * 七四式互換ShipParameterRecord
@@ -46,7 +47,7 @@ public class ShipParameterRecord {
     static {
         try {
             load();
-        } catch (IOException e) {
+        } catch (IOException | CsvException e) {
             LOG.get().warn("艦パラメータファイル読み込みに失敗しました", e);
         }
         INIT_COMPLETE = true;
@@ -197,7 +198,8 @@ public class ShipParameterRecord {
         if (modified) {
             try (CSVWriter writer = new CSVWriter(new OutputStreamWriter(new BufferedOutputStream(
                     new FileOutputStream(AppConstants.SHIP_PARAMETER_FILE)), AppConstants.CHARSET),
-                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER)) {
+                    CSVWriter.DEFAULT_SEPARATOR, CSVWriter.NO_QUOTE_CHARACTER,
+                    CSVWriter.DEFAULT_ESCAPE_CHARACTER, CSVWriter.DEFAULT_LINE_END)) {
                 List<String> flatten = new ArrayList<String>();
                 writer.writeNext(getHeader());
                 for (Entry<Integer, ShipParameterRecord> e : SHIP.entrySet()) {
@@ -230,7 +232,7 @@ public class ShipParameterRecord {
         }
     }
 
-    public static void load() throws IOException {
+    public static void load() throws IOException, CsvException {
         if (AppConstants.SHIP_PARAMETER_FILE.exists()) {
             CSVReader reader = new CSVReader(new InputStreamReader(
                     new FileInputStream(AppConstants.SHIP_PARAMETER_FILE), AppConstants.CHARSET));
