@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 import javax.json.Json;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
-import javax.json.JsonValue;
+import javax.json.JsonString;
 
 import org.apache.commons.io.IOUtils;
 
@@ -31,7 +31,8 @@ public class MapEdges {
         for (String area : api.keySet()) {
             Map<String, String[]> medges = new HashMap<>();
             for (String edge : api.getJsonObject(area).keySet()) {
-                medges.put(edge, api.getJsonObject(area).getJsonArray(edge).stream().map(JsonValue::toString)
+                medges.put(edge, api.getJsonObject(area).getJsonArray(edge).stream()
+                        .map(v -> ((JsonString) v).getString())
                         .toArray(String[]::new));
             }
             edges.put(area, medges);
