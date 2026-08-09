@@ -94,6 +94,13 @@ public final class ShipDto extends ShipBaseDto implements Comparable<ShipDto> {
     @Tag(27)
     private int[] onslot;
 
+    /** 格納庫増設後の艦載機最大搭載数 */
+    @Tag(43)
+    private int[] onslotMax;
+
+    /** api_onslot_max確認済み */
+    private transient boolean onslotMaxResolved;
+
     @Tag(40)
     private final String json;
 
@@ -135,6 +142,10 @@ public final class ShipDto extends ShipBaseDto implements Comparable<ShipDto> {
         this.maxhp = this.getMax().getHP();
         this.slotnum = object.getJsonNumber("api_slotnum").intValue();
         this.onslot = JsonUtils.getIntArray(object, "api_onslot");
+        // 拡張された艦娘のみ持つ(無い場合は長さ0が返る)
+        int[] onslotMax = JsonUtils.getIntArray(object, "api_onslot_max");
+        this.onslotMax = (onslotMax.length == 5) ? onslotMax : null;
+        this.onslotMaxResolved = true;
 
         this.soku = object.getInt("api_soku");
 
@@ -419,6 +430,29 @@ public final class ShipDto extends ShipBaseDto implements Comparable<ShipDto> {
     @Override
     public int[] getOnSlot() {
         return this.onslot;
+    }
+
+    /**
+     * 艦載機最大搭載数(格納庫増設の拡張を含む)
+     * @return 艦載機最大搭載数
+     */
+    @Override
+    public int[] getMaxeq() {
+        if ((this.onslotMax == null) && !this.onslotMaxResolved) {
+            this.onslotMaxResolved = true;
+            // タグ43が無い旧ログは保存してある生JSONから拾う
+            try {
+                if ((this.json != null) && this.json.contains("\"api_onslot_max\"")) {
+                    int[] onslotMax = JsonUtils.getIntArray(this.getJson(), "api_onslot_max");
+                    if (onslotMax.length == 5) {
+                        this.onslotMax = onslotMax;
+                    }
+                }
+            } catch (Exception e) {
+                // 壊れたログはマスターデータにフォールバック
+            }
+        }
+        return (this.onslotMax != null) ? this.onslotMax : super.getMaxeq();
     }
 
     /**

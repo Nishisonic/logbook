@@ -413,12 +413,12 @@ public class BattleHtmlGenerator extends HTMLGenerator {
             SHIP ship = ships.get(i);
             this.inline("td", String.valueOf(i + (isSecond ? 7 : 1)) + "." + ship.getFriendlyName(), null);
             List<ItemDto> items = ship.getItem2();
+            int[] onSlots = ship.getOnSlot(); // 現在の艦載機搭載数
+            int[] maxeq = ship.getMaxeq(); // 艦載機最大搭載数
             for (int c = 0; c < 5; ++c) {
                 String onSlot = "";
                 String itemName = "";
                 String tooltip = "";
-                int[] onSlots = ship.getOnSlot(); // 現在の艦載機搭載数
-                int[] maxeq = ship.getShipInfo().getMaxeq2(); // 艦載機最大搭載数
                 if (c < items.size()) {
                     ItemDto item = items.get(c);
                     if (item != null) {
