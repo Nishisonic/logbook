@@ -1,0 +1,148 @@
+name: Build runtime distributions
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'アップロード先の既存Releaseタグ（空欄ならActions Artifactのみ）'
+        required: false
+        type: string
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: win-x64-ex
+            os: windows-2025
+          - target: macosx-x64-ex
+            os: macos-15-intel
+          - target: macosx-aarch64-ex
+            os: macos-15
+          - target: linux-x64-ex
+            os: ubuntu-24.04
+          - target: linux-aarch64-ex
+            os: ubuntu-24.04-arm
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event_name == 'release' && github.event.release.tag_name || github.ref }}
+
+      - name: Set up Java 25
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '25'
+          cache: gradle
+          cache-dependency-path: |
+            build.gradle
+            gradle/wrapper/gradle-wrapper.properties
+
+      - name: Build JAR and runtime
+        shell: pwsh
+        run: |
+          if (-not $IsWindows) {
+            chmod +x ./gradlew
+            $gradle = "./gradlew"
+          }
+          else {
+            $gradle = ".\gradlew.bat"
+          }
+          & $gradle clean prepareRuntimeDistribution "-PdistributionTarget=${{ matrix.target }}" --no-daemon
+          if ($LASTEXITCODE -ne 0) {
+            throw "Gradle failed with exit code $LASTEXITCODE"
+          }
+
+      - name: Download and verify WinRun4J
+        if: matrix.target == 'win-x64-ex'
+        shell: pwsh
+        run: |
+          $archive = Join-Path $env:RUNNER_TEMP "winrun4J-0.4.5.zip"
+          $extractDir = Join-Path $env:RUNNER_TEMP "winrun4j"
+          curl.exe -L --fail --retry 3 -o $archive "https://sourceforge.net/projects/winrun4j/files/winrun4j/0.4.5/winrun4J-0.4.5.zip/download"
+          if ($LASTEXITCODE -ne 0) {
+            throw "WinRun4J download failed"
+          }
+
+          $expectedHash = "1977D44AE2B14414A9711CCEA4EB57816E10300ABCD6082803DB337E926D6F9E"
+          $actualHash = (Get-FileHash -Algorithm SHA256 -LiteralPath $archive).Hash
+          if ($actualHash -ne $expectedHash) {
+            throw "WinRun4J SHA-256 mismatch: $actualHash"
+          }
+
+          Expand-Archive -LiteralPath $archive -DestinationPath $extractDir
+          New-Item -Path "launcher\winrun4j" -ItemType Directory -Force | Out-Null
+          Copy-Item -LiteralPath (Join-Path $extractDir "winrun4j\bin\WinRun4J64.exe") -Destination "launcher\winrun4j"
+          Copy-Item -LiteralPath (Join-Path $extractDir "winrun4j\bin\RCEDIT64.exe") -Destination "launcher\winrun4j"
+
+          Push-Location launcher
+          try {
+            & .\make.bat
+            if ($LASTEXITCODE -ne 0) {
+              throw "Launcher build failed with exit code $LASTEXITCODE"
+            }
+          }
+          finally {
+            Pop-Location
+          }
+
+      - name: Create distribution ZIP
+        shell: pwsh
+        run: ./.github/scripts/package-runtime.ps1 -Target '${{ matrix.target }}'
+
+      - name: Upload distribution
+        uses: actions/upload-artifact@v7
+        with:
+          name: logbook.${{ matrix.target }}
+          path: build/distributions/logbook.${{ matrix.target }}.zip
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload standalone JAR
+        if: matrix.target == 'linux-x64-ex'
+        uses: actions/upload-artifact@v7
+        with:
+          name: logbook.jar
+          path: build/libs/logbook.jar
+          compression-level: 0
+          if-no-files-found: error
+          retention-days: 1
+
+  release-assets:
+    name: Upload Release assets
+    if: github.event_name == 'release' || inputs.release_tag != ''
+    needs: build
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'release' && github.event.release.tag_name || inputs.release_tag }}
+      GH_TOKEN: ${{ github.token }}
+
+    steps:
+      - name: Download distributions
+        uses: actions/download-artifact@v8
+        with:
+          pattern: logbook.*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Upload assets to Release
+        shell: bash
+        run: |
+          gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY"
+          gh release upload "$RELEASE_TAG" release-assets/* \
+            --repo "$GITHUB_REPOSITORY" \
+            --clobber

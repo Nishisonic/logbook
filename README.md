@@ -19,3 +19,13 @@
 - スクリプトによるテーブルの拡張
 
 その他、細かい修正や機能拡張などいろいろ
+
+## 専用ランタイム入り配布物の作成
+
+GitHubの「Actions」から「Build runtime distributions」を手動実行すると、Windows、macOS、Linuxの
+x64/ARM64向け配布ZIPを作成できます。`release_tag`に既存のReleaseタグを指定すると、5種類のZIPと
+`logbook.jar`をそのReleaseのAssetsへアップロードします。空欄の場合は保持期間1日のActions Artifact
+だけを作成します。同名のAssetがある場合は置き換えます。Releaseを新規公開した場合も、そのタグの
+ソースからAssetsを自動生成します。
+
+各環境用のSWTはGradleがMaven Centralから取得し、ZIPは`build/distributions`へ生成されます。

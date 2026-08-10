@@ -1,4 +1,4 @@
-mkdir win-x64-ex
+if not exist win-x64-ex mkdir win-x64-ex
 cd win-x64-ex
 del logbook.exe
 copy ..\winrun4j\WinRun4J64.exe logbook.exe

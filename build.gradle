@@ -25,6 +25,34 @@ repositories {
     }
 }
 
+def hostOs = System.getProperty('os.name').toLowerCase()
+def hostArch = System.getProperty('os.arch').toLowerCase()
+def hostCpu = hostArch in ['amd64', 'x86_64'] ? 'x64' :
+        hostArch in ['aarch64', 'arm64'] ? 'aarch64' : null
+if (hostCpu == null) {
+    throw new GradleException("Unsupported CPU architecture: ${hostArch}")
+}
+
+def hostTarget = hostOs.contains('windows') ? "win-${hostCpu}-ex" :
+        hostOs.contains('mac') ? "macosx-${hostCpu}-ex" :
+        hostOs.contains('linux') ? "linux-${hostCpu}-ex" : null
+if (hostTarget == null) {
+    throw new GradleException("Unsupported operating system: ${hostOs}")
+}
+
+def distributionTarget = providers.gradleProperty('distributionTarget').orElse(hostTarget).get()
+def swtArtifacts = [
+    'win-x64-ex'          : 'org.eclipse.swt.win32.win32.x86_64',
+    'macosx-x64-ex'       : 'org.eclipse.swt.cocoa.macosx.x86_64',
+    'macosx-aarch64-ex'   : 'org.eclipse.swt.cocoa.macosx.aarch64',
+    'linux-x64-ex'        : 'org.eclipse.swt.gtk.linux.x86_64',
+    'linux-aarch64-ex'    : 'org.eclipse.swt.gtk.linux.aarch64',
+]
+def swtArtifact = swtArtifacts[distributionTarget]
+if (swtArtifact == null) {
+    throw new GradleException("Unsupported distribution target: ${distributionTarget}")
+}
+
 dependencies {
     implementation ':annotation'                           // @CheckForNullのタグ付用
     // 証明書作成用（jdk15on系は1.70で開発終了のため後継のjdk18onへ移行）
@@ -54,9 +82,8 @@ dependencies {
     implementation ':protostuff-collectionschema-1.0.7'
     implementation ':protostuff-core-1.0.7'
     implementation ':protostuff-runtime-1.0.7'
-    // 描画用（Maven Centralから取得。旧lib/swt.jar(2016年ビルド)は未使用）
-    // Arm64: org.eclipse.platform:org.eclipse.swt.win32.win32.aarch64
-    implementation 'org.eclipse.platform:org.eclipse.swt.win32.win32.x86_64:3.134.0'
+    // 描画用。配布対象のOS/CPUに対応するSWTをMaven Centralから取得する
+    implementation "org.eclipse.platform:${swtArtifact}:3.134.0"
     // JavaScriptエンジン(Nashorn)。Java15でJDK本体から削除されたため外部依存として追加
     implementation 'org.openjdk.nashorn:nashorn-core:15.7'
 }
@@ -80,6 +107,68 @@ application {
     applicationDefaultJvmArgs = ['--enable-native-access=ALL-UNNAMED']
 }
 
+def runtimeModules = [
+    'java.base',
+    'java.compiler',
+    'java.desktop',
+    'java.management',
+    'java.naming',
+    'java.rmi',
+    'java.scripting',
+    'java.sql',
+    'jdk.charsets',       // MS932
+    'jdk.crypto.ec',      // HTTPS/TLS
+    'jdk.dynalink',       // Nashorn
+    'jdk.jfr',            // Netty
+    'jdk.localedata',     // 日本語ロケール
+    'jdk.unsupported',    // Nashorn/既存ライブラリ
+]
+
+def java25Launcher = javaToolchains.launcherFor {
+    languageVersion = JavaLanguageVersion.of(25)
+}
+
+tasks.register('jlinkRuntime', Exec) {
+    group = 'distribution'
+    description = '実行環境向けの専用Java 25ランタイムを生成します。'
+
+    def runtimeDir = layout.buildDirectory.dir('runtime')
+    inputs.files(configurations.runtimeClasspath)
+    inputs.property('modules', runtimeModules.join(','))
+    inputs.property('javaHome', java25Launcher.map { it.metadata.installationPath.asFile.absolutePath })
+    outputs.dir(runtimeDir)
+
+    doFirst {
+        delete(runtimeDir)
+
+        def javaHome = java25Launcher.get().metadata.installationPath.asFile
+        def executableSuffix = System.getProperty('os.name').toLowerCase().contains('windows') ? '.exe' : ''
+        commandLine(
+            new File(javaHome, "bin/jlink${executableSuffix}"),
+            '--add-modules', runtimeModules.join(','),
+            '--output', runtimeDir.get().asFile,
+            '--strip-debug',
+            '--no-header-files',
+            '--no-man-pages',
+            '--compress', 'zip-6'
+        )
+    }
+}
+
+tasks.register('prepareRuntimeDistribution', Sync) {
+    group = 'distribution'
+    description = '配布用の依存JARを収集し、対象環境のSWTをswt.jarとして配置します。'
+    dependsOn tasks.named('jar'), tasks.named('jlinkRuntime')
+
+    from(configurations.runtimeClasspath) {
+        rename { filename ->
+            filename.startsWith('org.eclipse.swt.') ? 'swt.jar' : filename
+        }
+    }
+    into layout.buildDirectory.dir('runtime-libs')
+    duplicatesStrategy = DuplicatesStrategy.FAIL
+}
+
 sourceSets {
     main {
         java {
@@ -94,7 +183,7 @@ jar {
         attributes(
             'Created-By': "Gradle ${gradle.gradleVersion}",
             'Main-Class': 'logbook.gui.ApplicationMain',
-            // dest/compress.ps1 は各OS向けSWTを常に "swt.jar" という名前で logbook_lib に配置するため、
+            // prepareRuntimeDistributionは各OS向けSWTを常に"swt.jar"という名前でlogbook_libに配置するため、
             // Mavenから解決される実ファイル名(例: org.eclipse.swt.win32.win32.x86_64-3.134.0.jar)ではなく
             // "swt.jar" に読み替える
             'Class-Path': '. ' + configurations.runtimeClasspath.files.collect {
