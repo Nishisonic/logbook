@@ -442,10 +442,7 @@ public class BattleExDto extends AbstractDto {
 
                 JsonArray jsonfriendlyTouchPlane = JsonUtils.getJsonArray(friendlyBattleObj, "api_touch_plane");
                 if (jsonfriendlyTouchPlane != null) {
-                    this.friendlytouchPlane = new int[] {
-                            Integer.parseInt(jsonfriendlyTouchPlane.get(0).toString()),
-                            Integer.parseInt(jsonfriendlyTouchPlane.get(1).toString())
-                    };
+                    this.friendlytouchPlane = JsonUtils.toCompulsionIntArray(jsonfriendlyTouchPlane);
                 }
 
                 JsonArray jsonfriendlyFlarePos = JsonUtils.getJsonArray(friendlyBattleObj, "api_flare_pos");
@@ -458,10 +455,7 @@ public class BattleExDto extends AbstractDto {
             // 夜間触接
             JsonArray jsonTouchPlane = JsonUtils.getJsonArray(object, "api_touch_plane");
             if (jsonTouchPlane != null) {
-                this.touchPlane = new int[] {
-                        Integer.parseInt(jsonTouchPlane.get(0).toString()),
-                        Integer.parseInt(jsonTouchPlane.get(1).toString()),
-                };
+                this.touchPlane = JsonUtils.toCompulsionIntArray(jsonTouchPlane);
             }
 
             // 照明弾発射艦
@@ -1578,26 +1572,28 @@ public class BattleExDto extends AbstractDto {
             this.maxFriendHp = new int[numFships];
             this.maxEnemyHp = new int[numEships];
 
-            this.enemy_NowHp = new int[numEships];
-            this.enemy_MaxHp = new int[numEships];
+            if (fnowhps != null) {
+                this.enemy_NowHp = new int[numEships];
+                this.enemy_MaxHp = new int[numEships];
 
-            for (int i = 0; i < enowhps.size(); i++) {
-                try {
-                    this.enemy_NowHp[i] = enowhps.getInt(i);
+                for (int i = 0; i < enowhps.size(); i++) {
+                    try {
+                        this.enemy_NowHp[i] = enowhps.getInt(i);
 
-                } catch (ClassCastException e) {
-                    // 50は"N/A"の代替値
-                    this.enemy_NowHp[i] = 50;
+                    } catch (ClassCastException e) {
+                        // 50は"N/A"の代替値
+                        this.enemy_NowHp[i] = 50;
+                    }
                 }
-            }
 
-            for (int i = 0; i < emaxhps.size(); i++) {
-                try {
-                    this.enemy_MaxHp[i] = emaxhps.getInt(i);
+                for (int i = 0; i < emaxhps.size(); i++) {
+                    try {
+                        this.enemy_MaxHp[i] = emaxhps.getInt(i);
 
-                } catch (ClassCastException e) {
-                    // 50は"N/A"の代替値
-                    this.enemy_MaxHp[i] = 50;
+                    } catch (ClassCastException e) {
+                        // 50は"N/A"の代替値
+                        this.enemy_MaxHp[i] = 50;
+                    }
                 }
             }
 

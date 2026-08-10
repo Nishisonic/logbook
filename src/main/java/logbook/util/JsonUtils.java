@@ -11,6 +11,7 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonNumber;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
+import javax.json.JsonString;
 import javax.json.JsonValue;
 
 /**
@@ -32,7 +33,16 @@ public class JsonUtils {
             return new int[0];
         int[] ret = new int[jsonArray.size()];
         for (int i = 0; i < jsonArray.size(); i++) {
-            ret[i] = Integer.parseInt(jsonArray.get(i).toString());
+            JsonValue value = jsonArray.get(i);
+            if (value instanceof JsonNumber) {
+                ret[i] = ((JsonNumber) value).intValueExact();
+            }
+            else if (value instanceof JsonString) {
+                ret[i] = Integer.parseInt(((JsonString) value).getString());
+            }
+            else {
+                throw new NumberFormatException("Not an integer: " + value);
+            }
         }
         return ret;
     }
