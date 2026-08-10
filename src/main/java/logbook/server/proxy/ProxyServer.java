@@ -23,6 +23,7 @@ import org.littleshoot.proxy.HttpFiltersSourceAdapter;
 import org.littleshoot.proxy.HttpProxyServer;
 import org.littleshoot.proxy.HttpProxyServerBootstrap;
 import org.littleshoot.proxy.MitmManager;
+import org.littleshoot.proxy.impl.ClientDetails;
 import org.littleshoot.proxy.impl.DefaultHttpProxyServer;
 
 import io.netty.channel.ChannelHandlerContext;
@@ -73,7 +74,8 @@ public final class ProxyServer {
                     // 上流プロキシ使用有無
                     server = serverBootstrap.withChainProxyManager(new ChainedProxyManager() {
                         @Override
-                        public void lookupChainedProxies(HttpRequest httpRequest, Queue<ChainedProxy> chainedProxies) {
+                        public void lookupChainedProxies(HttpRequest httpRequest, Queue<ChainedProxy> chainedProxies,
+                                ClientDetails clientDetails) {
                             chainedProxies.add(new ChainedProxyAdapter() {
                                 @Override
                                 public InetSocketAddress getChainedProxyAddress() {

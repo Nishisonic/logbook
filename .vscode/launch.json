@@ -10,10 +10,7 @@
             "request": "launch",
             "mainClass": "logbook.gui.ApplicationMain",
             "projectName": "logbook",
-            // browsermob-distが内包する古いLittleProxy/NettyがJDK16+の強いカプセル化に
-            // 抵触して起動時にInaccessibleObjectExceptionを起こすため、reflectionを許可する
-            // (build.gradleのapplicationDefaultJvmArgsと同じ内容。デバッグ起動はGradle run経由ではないため個別指定が必要)
-            "vmArgs": "--add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED"
+            "vmArgs": "--enable-native-access=ALL-UNNAMED"
         }
     ]
 }

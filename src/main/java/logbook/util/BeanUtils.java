@@ -24,8 +24,32 @@ import org.apache.commons.io.FilenameUtils;
  */
 public final class BeanUtils {
 
+    private static final int MIN_XML_ENTITY_SIZE_LIMIT = 5_000_000;
+
+    static {
+        // JDK 24以降の既定値(100,000)では、XMLEncoderがエスケープした大きな文字列を含む
+        // master.xmlを復元できないため、ローカル設定ファイルに必要な範囲まで引き上げる
+        ensureXmlLimit("jdk.xml.maxGeneralEntitySizeLimit");
+        ensureXmlLimit("jdk.xml.totalEntitySizeLimit");
+    }
+
     /** ロガー */
     private static final LoggerHolder LOG = new LoggerHolder(BeanUtils.class);
+
+    private static void ensureXmlLimit(String name) {
+        String configured = System.getProperty(name);
+        if (configured != null) {
+            try {
+                int value = Integer.parseInt(configured);
+                if (value <= 0 || value >= MIN_XML_ENTITY_SIZE_LIMIT) {
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                // 不正な設定値は、このアプリケーションで必要な値に置き換える
+            }
+        }
+        System.setProperty(name, Integer.toString(MIN_XML_ENTITY_SIZE_LIMIT));
+    }
 
     /**
      * JavaBeanオブジェクトをXML形式でファイルに書き込みます

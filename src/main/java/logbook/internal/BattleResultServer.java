@@ -46,6 +46,11 @@ public class BattleResultServer {
 
     private static DateFormat format = new SimpleDateFormat(AppConstants.BATTLE_LOGFILE_DATE_FORMAT);
 
+    static {
+        // Protostuff 1.0.7のUnsafe経路はJDK 24以降で警告され、将来削除されるため使用しない
+        System.setProperty("protostuff.runtime.use_sun_misc_unsafe", "false");
+    }
+
     private static Schema<BattleExDto> schema = RuntimeSchema.getSchema(BattleExDto.class);
 
     private static class BattleResult extends BattleResultDto {
