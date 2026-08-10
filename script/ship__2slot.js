@@ -31,7 +31,7 @@ function body(ship) {
 	var slotExName = (ship.slotExItem != null) ? ship.slotExItem.friendlyName : null;
 	var slotEx = ship.hasSlotEx() ? "◎" : "×";
 	var onSlot = ship.onSlot;
-	var maxEq = ship.shipInfo.maxeq;
+	var maxEq = ship.maxeq;
 	var slotNum = ship.slotNum;
 	for (var i = 0; i < slotNum; ++i) {
 		var item = slotItems.get(i);
