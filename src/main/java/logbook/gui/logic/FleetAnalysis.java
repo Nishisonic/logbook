@@ -10,6 +10,7 @@ import javax.json.JsonObjectBuilder;
 import logbook.data.context.GlobalContext;
 import logbook.dto.ItemDto;
 import logbook.dto.ShipDto;
+import logbook.util.JsonUtils;
 
 /**
  * @author Nishikuma
@@ -52,6 +53,11 @@ public class FleetAnalysis {
                             }
                             if (json.containsKey("api_locked")) {
                                 result = result.add("api_locked", json.getInt("api_locked"));
+                            }
+                            // 格納庫増設ぶんの搭載数 スロット数は受け取り側が末尾を切り捨てるのに使う
+                            if (JsonUtils.hasKey(json, "api_onslot_max")) {
+                                result = result.add("api_onslot_max", json.getJsonArray("api_onslot_max"));
+                                result = result.add("api_slotnum", json.getInt("api_slotnum"));
                             }
 
                             return result.build().toString();

@@ -136,6 +136,7 @@ public class DeckBuilder {
                     ship.add("luck", ships.get(shipIdx).getLucky());
                     JsonObjectBuilder items = Json.createObjectBuilder();
                     List<ItemDto> item2 = ships.get(shipIdx).getItem2();
+                    int[] maxeq = ships.get(shipIdx).getMaxeq();
 
                     for (int itemIdx = 0; itemIdx < item2.size(); itemIdx++) {
                         JsonObjectBuilder item = Json.createObjectBuilder();
@@ -152,6 +153,9 @@ public class DeckBuilder {
                             item.add("rf", 0);
                         }
                         item.add("mas", Integer.toString(itemDto.getAlv()));
+                        if (itemDto.isPlane() && (maxeq != null) && (itemIdx < maxeq.length)) {
+                            item.add("ac", maxeq[itemIdx]);
+                        }
                         items.add("i" + (itemIdx + 1), item);
                     }
 
@@ -205,6 +209,7 @@ public class DeckBuilder {
                     ship.add("luck", ships.get(shipIdx).getLucky());
                     JsonObjectBuilder items = Json.createObjectBuilder();
                     List<ItemDto> item2 = ships.get(shipIdx).getItem2();
+                    int[] maxeq = ships.get(shipIdx).getMaxeq();
 
                     for (int itemIdx = 0; itemIdx < item2.size(); itemIdx++) {
                         JsonObjectBuilder item = Json.createObjectBuilder();
@@ -221,6 +226,9 @@ public class DeckBuilder {
                             item.add("rf", 0);
                         }
                         item.add("mas", Integer.toString(itemDto.getAlv()));
+                        if (itemDto.isPlane() && (maxeq != null) && (itemIdx < maxeq.length)) {
+                            item.add("ac", maxeq[itemIdx]);
+                        }
                         items.add("i" + (itemIdx + 1), item);
                     }
 
