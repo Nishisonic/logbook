@@ -3,6 +3,8 @@
  */
 package logbook.util;
 
+import java.util.Locale;
+
 import com.melloware.jintellitype.HotkeyListener;
 import com.melloware.jintellitype.JIntellitype;
 
@@ -15,16 +17,23 @@ public class JIntellitypeWrapper {
     private static JIntellitype instance = null;
     private static int currentSetting = 0;
 
-    public static JIntellitype getInstance() {
+    public static synchronized JIntellitype getInstance() {
         if (initialized == false) {
+            initialized = true;
+            if (isWindows() == false) {
+                return null;
+            }
             try {
                 instance = JIntellitype.getInstance();
-            } catch (Exception e) {
+            } catch (Exception | LinkageError e) {
                 instance = null;
             }
-            initialized = true;
         }
         return instance;
+    }
+
+    private static boolean isWindows() {
+        return System.getProperty("os.name", "").toLowerCase(Locale.ROOT).contains("windows");
     }
 
     public static void addListener(HotkeyListener listener) {
